@@ -67,23 +67,21 @@ eq(html.indexOf('<label class="v2-xp" for="v2-gender-sel">Giới tính:</label>'
 has(shell, "v2-header-menu", "ui shell toggles the header menu");
 has(html, "max-width: 560px", "narrow-phone media query exists");
 
-/* (3) Header sửa vỡ layout 25/10: khối cấp/XP là hàng grid thứ hai
-     trải hết chiều rộng, vòng cấp + thanh XP + số XP + dòng mở khóa
-     nằm trên MỘT hàng ngang theo đúng thứ tự đó; thanh XP có nền
-     track đậm nhìn thấy được ngay cả ở 0%; dòng chuỗi ngày của
-     feat-a1 gọn một dòng và không còn nhắc huy hiệu (tránh nhân đôi
-     với chip huy hiệu ở góc phải trên). */
+/* Phạm vi hẹp 25/10 (đính chính của người dùng): chỉ cụm sao/xu/huy
+   hiệu lên góc phải + 2 sửa lỗi, còn lại giữ nguyên như bản 23f73f7.
+   (a) Không còn bố cục grid 2 hàng của bản sửa vỡ layout trước đó;
+   khối cấp/XP vẫn là hàng .v2-hd-level gốc: vòng cấp kề khối XP,
+   số XP giữ nguyên câu đầy đủ "lên cấp". (b) Nền track thanh XP đậm
+   để nhìn thấy được ngay cả ở 0%. (c) Câu chuỗi ngày của feat-a1 giữ
+   nguyên như bản gốc, không rút gọn, không sửa búp bê hay vị trí nút. */
 var renderFn = html.slice(html.indexOf("function renderProfileBar"), html.indexOf("function renderGradeTabs"));
-has(html, 'grid-template-areas: "doll top" "level level"', "header profile bar is a 2-row grid");
-has(html, ".v2-hd-level { grid-area: level", "level block spans the full grid row");
-eq(renderFn.indexOf('</div></div><div class="v2-hd-level">') !== -1, true, "level block sits outside the name column, not inside it");
-eq(renderFn.indexOf("v2-hd-lvl") < renderFn.indexOf("v2-hd-xpbar") && renderFn.indexOf("v2-hd-xpbar") < renderFn.indexOf("v2-hd-xpnum") && renderFn.indexOf("v2-hd-xpnum") < renderFn.indexOf("v2-hd-next"), true, "level row order is badge, bar, numbers, next-unlock on one line");
-has(html, "background: #f0dfba", "XP bar track is dark enough to see at 0%");
+eq(html.indexOf('grid-template-areas: "doll top" "level level"') === -1, true, "no 2-row grid layout from the over-broad fix");
+eq(renderFn.indexOf("v2-hd-lvl") < renderFn.indexOf("v2-hd-xpwrap"), true, "level badge sits beside the XP block in the same row");
+has(renderFn, "XP nữa lên cấp ", "XP numbers keep the full next-level phrase");
+has(html, ".v2-hd-xpbar { height: 18px; background: #f0dfba", "XP bar track is dark enough to see at 0%");
 var a1 = fs.readFileSync(path.join(__dirname, "..", "assets", "data", "feat-a1.js"), "utf8");
-var decorFn = a1.slice(a1.indexOf("function decorateProfileBar"), a1.indexOf("function refreshA1UI")).replace(/\/\*[\s\S]*?\*\//g, "");
-eq(decorFn.indexOf("Huy hiệu") === -1, true, "streak area no longer repeats the badges count");
-has(decorFn, "Chuỗi: ", "streak display is a single compact chip");
-has(decorFn, "a1-bar-extra", "streak line reuses its existing element instead of duplicating");
+has(a1, "học hôm nay để giữ chuỗi nhé!", "streak sentence is unchanged from the original");
+has(a1, "Huy hiệu: ", "streak area keeps its original badges mention (unchanged scope)");
 
 console.log(failures === 0 ? "ALL CHECKS PASSED (" + n + " checks)" : failures + " FAILURES");
 process.exit(failures === 0 ? 0 : 1);
