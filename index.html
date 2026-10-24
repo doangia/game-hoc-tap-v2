@@ -113,10 +113,14 @@
       .progress-meta .stars-now { color: var(--sun-dark); }
       .progress-bar { height: 20px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 3px solid var(--line); }
       .progress-fill { height: 100%; width: 0%; background: var(--leaf); border-radius: 999px; transition: width 0.4s ease; }
+      /* Sửa 24/10 (theo yêu cầu Danh): khung câu hỏi thành box riêng rõ rệt —
+         nền xanh nhạt khác nền trang (#fff6e3) và thẻ trắng khác, viền dashed
+         thay vì viền liền; vẫn bảng màu sáng, chữ vẫn mực tối đọc rõ. */
       .q-card {
-        background: var(--card); border: 3px solid var(--line); border-radius: 30px;
+        background: #e8f3ff; border: 3px dashed var(--sky); border-radius: 30px;
         box-shadow: var(--shadow); padding: 22px 18px 24px; text-align: center; position: relative; overflow: hidden;
       }
+      .q-card .q-prompt { padding-right: 56px; }
       .q-card.shake { animation: shake 0.4s ease; }
       @keyframes shake { 0%,100% { transform: none; } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
       .q-prompt { font-size: clamp(23px, 6vw, 31px); font-weight: 800; line-height: 1.3; margin: 0 0 6px; }
@@ -169,6 +173,16 @@
         box-shadow: 0 5px 0 var(--line); transition: transform 0.1s ease, border-color 0.15s, background 0.15s;
         width: 100%;
       }
+      /* Sửa 24/10 (theo yêu cầu Danh): mỗi lựa chọn một màu nền pastel xoay vòng
+         theo thứ tự (màu đã có trong bảng màu game, nhạt để chữ vẫn đọc rõ).
+         Các class này đặt TRƯỚC .opt.right/.opt.wrong nên trạng thái đúng/sai
+         vẫn lấn át màu gốc khi trả lời. */
+      .opt.opt-c0 { background: #e3f2fd; border-color: #90caf9; }
+      .opt.opt-c1 { background: #fff8e1; border-color: #ffd54f; }
+      .opt.opt-c2 { background: #e8f5e9; border-color: #a5d6a7; }
+      .opt.opt-c3 { background: #fce4ec; border-color: #f48fb1; }
+      .opt.opt-c4 { background: #fdeee8; border-color: #ffab91; }
+      .opt.opt-c5 { background: #e0f2f1; border-color: #80cbc4; }
       .opt:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line); }
       .opt .opt-emoji { font-size: 62px; line-height: 1.1; }
       .opt .opt-emoji svg { width: 76px; height: 76px; }
@@ -603,7 +617,7 @@
         <div class="q-card" id="q-card">
           <div class="q-badge" id="q-badge"></div>
           <p class="q-prompt" id="q-prompt"></p>
-          <button id="q-speak-btn" class="q-speak-btn" type="button">🔊 Nghe câu hỏi</button>
+          <button id="q-speak-btn" class="q-speak-btn" type="button" aria-label="Nghe câu hỏi" title="Nghe câu hỏi">🔊</button>
           <button id="q-report-btn" class="q-report-btn" type="button" title="Báo câu hỏi có vấn đề" hidden>🚩 Báo lỗi</button>
           <div class="q-visual" id="q-visual"></div>
           <div class="options" id="q-options"></div>
@@ -2557,7 +2571,11 @@
     (function () {
       var st = document.createElement("style");
       st.textContent =
-        ".q-speak-btn{display:inline-block;margin:2px 0 8px;font-family:inherit;font-size:16px;font-weight:800;padding:9px 16px;border-radius:14px;border:3px solid var(--line,#f0dfba);background:#fffdf6;color:#33302a;cursor:pointer}" +
+        /* Sửa 24/10 (theo yêu cầu Danh): nút nghe chỉ còn icon, nằm góc trên bên phải
+           trong #q-card (đã có position:relative); đề bài đã chừa padding-right 56px
+           nên icon không che đề, và nó nằm trong thẻ nên không che nút quay lại hay
+           thanh tiến độ ngoài thẻ. Chức năng đọc giữ nguyên, chỉ đổi hiển thị. */
+        ".q-speak-btn{position:absolute;top:12px;right:12px;width:46px;height:46px;padding:0;font-size:22px;line-height:1;border-radius:50%;border:3px solid var(--line,#f0dfba);background:#fff;color:#33302a;cursor:pointer;z-index:2}" +
         ".q-speak-btn:disabled{opacity:.55;cursor:wait}" +
         ".voice-warn-box{background:#fff3cd;border:2px solid #e6c200;border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:15px;line-height:1.5;color:#5a4a00}" +
         ".en-voice-warn{color:#b00020;font-weight:700}" +
@@ -2654,7 +2672,7 @@
       qSpeakActive = false;
       if (qSpeakTimer) { clearTimeout(qSpeakTimer); qSpeakTimer = null; }
       if (qSpeakWatch) { clearInterval(qSpeakWatch); qSpeakWatch = null; }
-      var b = el("q-speak-btn"); if (b) { b.disabled = false; b.textContent = "🔊 Nghe câu hỏi"; }
+      var b = el("q-speak-btn"); if (b) { b.disabled = false; b.textContent = "🔊"; b.setAttribute("aria-label", "Nghe câu hỏi"); b.setAttribute("title", "Nghe câu hỏi"); }
     }
     var qSpeakBtn = el("q-speak-btn");
     if (qSpeakBtn) qSpeakBtn.addEventListener("click", function () {
@@ -2669,7 +2687,7 @@
       var looksEnglish = stem && !/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(stem) && /[A-Za-z]{3,}/.test(stem);
       if (!stem) return;
       qSpeakActive = true;
-      qSpeakBtn.textContent = "⏹ Dừng đọc";
+      qSpeakBtn.textContent = "⏹"; qSpeakBtn.setAttribute("aria-label", "Dừng đọc"); qSpeakBtn.setAttribute("title", "Dừng đọc");
       qSpeakTimer = setTimeout(qSpeakReset, Math.min(120000, 6000 + stem.length * 130));
       if (isEngQ || looksEnglish) {
         /* v2 — tách ngôn ngữ, prompt-only: hướng dẫn tiếng Việt đọc bằng
@@ -3162,7 +3180,7 @@ function valueKeyOf(html) {
       box.style.gridTemplateColumns = q.optStack ? "1fr" : "";
       q.options.forEach(function (opt, i) {
         var b = document.createElement("button");
-        b.className = "opt";
+        b.className = "opt opt-c" + (i % 6);
         b.innerHTML = opt.html;
         b.addEventListener("click", function () { choose(i, b); });
         box.appendChild(b);
@@ -3175,8 +3193,12 @@ function valueKeyOf(html) {
         btn.classList.add("right");
         el("q-options").querySelectorAll(".opt").forEach(function (o) { o.disabled = true; });
         if (q.kind === "blank") {
+          /* Sửa 24/10 (theo yêu cầu Danh): trả lời đúng chỉ tô xanh ô trống
+             (class filled đổi viền thành liền xanh lá), KHÔNG ghi đáp án vào
+             chỗ "?" nữa — dấu "?" giữ nguyên, phương án đúng đã tô xanh như
+             các dạng khác là đủ. Không đổi cách tính sao/XP hay kiểm tra đáp án. */
           var slot = el("q-visual").querySelector(".blank-slot");
-          if (slot) { slot.textContent = q.blankText; slot.classList.add("filled"); }
+          if (slot) { slot.textContent = "?"; slot.classList.add("filled"); }
           if (q.speak) setTimeout(function () { speak(q.speak); }, 150);
         }
         spawnStar(btn);
@@ -3338,9 +3360,9 @@ function valueKeyOf(html) {
       drawTFRound();
       var box = el("q-options");
       box.className = "options cols-2";
-      [["✅ Đúng", true], ["❌ Sai", false]].forEach(function (pair) {
+      [["✅ Đúng", true], ["❌ Sai", false]].forEach(function (pair, pi) {
         var b = document.createElement("button");
-        b.className = "opt tf-btn";
+        b.className = "opt tf-btn opt-c" + (pi % 6);
         b.innerHTML = '<span class="opt-word">' + pair[0] + "</span>";
         b.addEventListener("click", function () { tfAnswer(pair[1]); });
         box.appendChild(b);

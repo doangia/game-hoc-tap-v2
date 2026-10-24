@@ -440,7 +440,7 @@
   function injectCss() {
     if (typeof document === "undefined" || document.getElementById("v2-p34-css")) return;
     var s = document.createElement("style"); s.id = "v2-p34-css";
-    s.textContent = ".v2-p34{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-p34 h3{margin:2px 0 8px;font-size:18px}.v2-p34 .qrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.v2-p34 .bar{flex:1;min-width:120px;height:14px;background:#f5ecd7;border-radius:8px;overflow:hidden}.v2-p34 .fill{height:100%;background:#ffb300}.v2-p34 button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-p34 button:disabled{opacity:.5;cursor:default}.v2-p34 .done{color:#2e7d32}.v2-frame-gold{outline:4px solid #ffb300;outline-offset:2px;border-radius:50%}.v2-frame-star{outline:4px solid #7e57c2;outline-offset:2px;border-radius:50%}.v2-helper-row{display:flex;gap:8px;margin:6px 0}.v2-helper-row button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fffdf6;border:3px solid #f0dfba;cursor:pointer}";
+    s.textContent = ".v2-p34{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-p34 h3{margin:2px 0 8px;font-size:18px}.v2-p34 .qrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.v2-p34 .bar{flex:1;min-width:120px;height:14px;background:#f5ecd7;border-radius:8px;overflow:hidden}.v2-p34 .fill{height:100%;background:#ffb300}.v2-p34 button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-p34 button:disabled{opacity:.5;cursor:default}.v2-p34 .done{color:#2e7d32}.v2-frame-gold{outline:4px solid #ffb300;outline-offset:2px;border-radius:50%}.v2-frame-star{outline:4px solid #7e57c2;outline-offset:2px;border-radius:50%}.v2-helper-row{display:flex;gap:8px;margin:6px 0;align-items:center;justify-content:center;flex-wrap:wrap}.v2-helper-row button{position:relative;width:46px;height:46px;padding:0;font-size:22px;line-height:1;border-radius:50%;font-weight:800;background:#fffdf6;border:3px solid #f0dfba;cursor:pointer}.v2-helper-row button:disabled{opacity:.5;cursor:default}.v2-helper-row button:hover::after,.v2-helper-row button:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#33302a;color:#fff;font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;z-index:5}.v2-helper-note{font-size:13px;font-weight:700;color:#6f675a}";
     document.head.appendChild(s);
   }
   function getProfile() {
@@ -576,7 +576,17 @@
       });
     }
     var q = ensureV2P34(prof);
-    old.innerHTML = "<button type=\"button\" data-helper=\"eliminate\">🔍 Loại 1 đáp án sai (" + q.helpers.eliminate + " còn)</button><button type=\"button\" data-helper=\"hint\">💡 Gợi ý từng bước (" + q.helpers.hint + " còn)</button><span>Đã dùng " + helpersUsed() + "/2 trong lượt này · Không dùng được trong mô phỏng kiểm tra.</span>";
+    /* Sửa 24/10 (theo yêu cầu Danh): thanh công cụ gọn chỉ còn icon; chú giải đầy đủ
+       hiện khi hover/focus qua data-tip (CSS ::after), không hiện 2 tooltip cùng lúc
+       vì mỗi tooltip chỉ gắn với đúng nút đang hover/focus. Ghi chú dài trước đây rút
+       thành một ghi chú nhỏ cùng hàng (cũng là cách người dùng mobile thấy số còn lại,
+       vì mobile không có hover — xem báo cáo). Hết lượt (đã dùng 2/2) hoặc hết số đã mua
+       thì icon bị disabled thật, không còn bấm rồi mới báo lỗi. Nút nghe góc phải không
+       nằm trong thanh này; mô phỏng kiểm tra vẫn không có thanh này (show=false ở trên). */
+    var used = helpersUsed();
+    var elDis = (used >= 2 || q.helpers.eliminate <= 0) ? " disabled" : "";
+    var hintDis = (used >= 2 || q.helpers.hint <= 0) ? " disabled" : "";
+    old.innerHTML = "<button type=\"button\" data-helper=\"eliminate\" aria-label=\"Loại 1 đáp án sai, còn " + q.helpers.eliminate + "\" data-tip=\"Loại 1 đáp án sai — còn " + q.helpers.eliminate + "\"" + elDis + ">🔍</button><button type=\"button\" data-helper=\"hint\" aria-label=\"Gợi ý từng bước, còn " + q.helpers.hint + "\" data-tip=\"Gợi ý từng bước — còn " + q.helpers.hint + "\"" + hintDis + ">💡</button><span class=\"v2-helper-note\">🔍 " + q.helpers.eliminate + " · 💡 " + q.helpers.hint + " · đã dùng " + used + "/2</span>";
   }
   var pendingReview = null;
   function initUi() {
