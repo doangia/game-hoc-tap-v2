@@ -453,6 +453,13 @@
       .v2-tab-shop [data-p34-panel="cards"] { border-color: #7e57c2; box-shadow: 0 4px 0 #7e57c2; }
       .v2-tab-shop [data-p34-panel="shop"] { border-color: var(--sky); box-shadow: 0 4px 0 var(--sky); }
       .v2-profile-summary, .v2-ghost-note { background: #fff; border: 3px solid var(--line); border-radius: 16px; padding: 12px 14px; font-weight: 700; margin-bottom: 14px; }
+      .v2-profile-name { font-size: 18px; margin-bottom: 10px; }
+      .v2-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+      .v2-stat { background: #fff8e1; border: 3px solid var(--line); border-radius: 14px; padding: 8px 4px; text-align: center; }
+      .v2-stat-icon { font-size: 28px; display: block; line-height: 1.1; }
+      .v2-stat-num { font-size: 24px; font-weight: 800; display: block; }
+      .v2-stat-label { font-size: 13px; font-weight: 700; color: var(--ink-soft); display: block; }
+      .v2-tab-note { font-size: 13px; font-weight: 600; color: var(--ink-soft); text-align: center; margin: 4px 0 14px; }
       .v2-profile-note { font-weight: 600; color: var(--ink-soft); margin: 0 0 10px; }
       .v2-game-xp { color: var(--ink-soft); }
     </style>
@@ -516,13 +523,14 @@
             <span class="desc">Nghe từ • Điền từ • Ghép nối • Trò chơi</span>
           </button>
         </div>
-        <p class="home-note">Nội dung bám sách Kết nối tri thức và Global Success. Mỗi lượt chơi 10 màn đan xen: trắc nghiệm, điền chỗ trống, ghép nối và trò chơi. Đúng được sao, sai được thử lại — không trừ điểm.</p>
+        <p class="home-note">📚 Bám SGK · 🎮 10 màn/lượt · ⭐ Đúng được sao, sai được thử lại</p>
         <!-- Dòng góp ý/báo lỗi ở footer đã ẩn trên bản fork của Danh (giữ lại code để khôi phục khi cần) -->
         <p class="contact-line" hidden>💬 Góp ý, báo lỗi: Facebook: <a href="https://fb.com/yeuemngannamhy" target="_blank" rel="noopener">fb.com/yeuemngannamhy</a> · Zalo: <a href="https://zalo.me/0977236591" target="_blank" rel="noopener">0977236591</a></p>
               </div>
         <div id="v2-tab-quests" class="v2-tab-panel" hidden>
           <div id="v2-tab-quests-inner"></div>
           <div id="v2-p34-panels"></div>
+          <p class="v2-tab-note">Chỉ tính lượt đã hoàn thành · Sao mỗi chủ đề chỉ tính lượt đầu trong ngày · Tuần: 5 ngày hoặc làm chủ 1 kĩ năng, thưởng 30 xu · Đóng băng 30 xu, mua trước ngày nghỉ, giữ 1 ngày · Hồi chuỗi: 3 lượt ôn trong 3 ngày, 1 lần/30 ngày</p>
         </div>
         <div id="v2-tab-shop" class="v2-tab-panel" hidden>
           <div id="v2-tab-shop-inner"></div>

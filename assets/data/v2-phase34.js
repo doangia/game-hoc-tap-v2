@@ -440,7 +440,10 @@
   function injectCss() {
     if (typeof document === "undefined" || document.getElementById("v2-p34-css")) return;
     var s = document.createElement("style"); s.id = "v2-p34-css";
-    s.textContent = ".v2-p34{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-p34 h3{margin:2px 0 8px;font-size:18px}.v2-p34 .qrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.v2-p34 .bar{flex:1;min-width:120px;height:14px;background:#f5ecd7;border-radius:8px;overflow:hidden}.v2-p34 .fill{height:100%;background:#ffb300}.v2-p34 button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-p34 button:disabled{opacity:.5;cursor:default}.v2-p34 .done{color:#2e7d32}.v2-frame-gold{outline:4px solid #ffb300;outline-offset:2px;border-radius:50%}.v2-frame-star{outline:4px solid #7e57c2;outline-offset:2px;border-radius:50%}.v2-helper-row{display:flex;gap:8px;margin:12px 0;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff8e1;border:2px solid #f0dfba;border-radius:16px;padding:8px 10px}.v2-helper-row button{position:relative;width:46px;height:46px;padding:0;font-size:22px;line-height:1;border-radius:50%;font-weight:800;background:#fffdf6;border:3px solid #f0dfba;cursor:pointer}.v2-helper-row button:disabled{opacity:.5;cursor:default}.v2-helper-row button:hover::after,.v2-helper-row button:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#33302a;color:#fff;font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;z-index:5}.v2-helper-note{font-size:13px;font-weight:700;color:#6f675a}";
+    s.textContent = ".v2-p34{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-p34 h3{margin:2px 0 10px;font-size:18px}.v2-p34 .qrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.v2-p34 .bar{flex:1;min-width:120px;height:14px;background:#f5ecd7;border-radius:8px;overflow:hidden}.v2-p34 .fill{height:100%;background:#ffb300}.v2-p34 button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-p34 button:disabled{opacity:.5;cursor:default}.v2-p34 .done{color:#2e7d32}.v2-frame-gold{outline:4px solid #ffb300;outline-offset:2px;border-radius:50%}.v2-frame-star{outline:4px solid #7e57c2;outline-offset:2px;border-radius:50%}.v2-helper-row{display:flex;gap:8px;margin:12px 0;align-items:center;justify-content:center;flex-wrap:wrap;background:#fff8e1;border:2px solid #f0dfba;border-radius:16px;padding:8px 10px}.v2-helper-row button{position:relative;width:46px;height:46px;padding:0;font-size:22px;line-height:1;border-radius:50%;font-weight:800;background:#fffdf6;border:3px solid #f0dfba;cursor:pointer}.v2-helper-row button:disabled{opacity:.5;cursor:default}.v2-helper-row button:hover::after,.v2-helper-row button:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#33302a;color:#fff;font-size:13px;font-weight:700;padding:6px 10px;border-radius:10px;white-space:nowrap;z-index:5}.v2-helper-note{font-size:13px;font-weight:700;color:#6f675a}" +
+      /* Thiết kế lại 24/10 theo hướng game hơn: thẻ nhiệm vụ icon lớn +
+         thanh tiến độ dày + số tiến độ, thay cho hàng chữ dài. */
+      ".v2-qcard{display:flex;gap:12px;align-items:center;background:#fff8e1;border:3px solid #f0dfba;border-radius:18px;padding:10px 12px;margin:8px 0}.v2-qicon{font-size:40px;line-height:1;flex-shrink:0}.v2-qmain{flex:1;min-width:0}.v2-qname{font-weight:800;font-size:17px;display:block}.v2-qbar{height:20px;background:#f5ecd7;border-radius:10px;overflow:hidden;margin:6px 0}.v2-qfill{height:100%;background:#ffb300}.v2-qnum{font-weight:800;font-size:15px;white-space:nowrap}.v2-qbtn{background:#ffb703 !important;box-shadow:0 3px 0 #e69a00 !important;white-space:nowrap}.v2-streak-big{font-size:44px;font-weight:800;line-height:1}.v2-streak-big small{font-size:18px}.v2-shop-summary{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.v2-shop-tile{flex:1;min-width:86px;background:#fff8e1;border:3px solid #f0dfba;border-radius:16px;padding:8px 6px;text-align:center;font-weight:800}.v2-shop-tile .v2-shop-num{font-size:22px;display:block}.v2-shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}.v2-shop-item{background:#fff;border:3px solid #f0dfba;border-radius:18px;padding:12px 8px;text-align:center}.v2-shop-item .v2-shop-emoji{font-size:44px;line-height:1.1;display:block}.v2-shop-item .v2-shop-name{font-weight:800;font-size:15px;display:block;margin:4px 0}.v2-shop-item .v2-shop-price{font-weight:800;color:#6f675a;display:block;margin-bottom:6px}.v2-ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}.v2-ach{border:3px solid #f0dfba;border-radius:18px;padding:12px 6px;text-align:center;background:#fff}.v2-ach .v2-ach-icon{font-size:40px;line-height:1.1;display:block}.v2-ach .v2-ach-name{font-weight:800;font-size:14px;display:block;margin-top:4px}.v2-ach.locked{opacity:.45;filter:grayscale(1)}.v2-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.v2-card-item{border:3px solid #7e57c2;border-radius:18px;padding:12px 10px;text-align:center;background:#f3efff;box-shadow:0 4px 0 #7e57c2}.v2-card-item .v2-card-emoji{font-size:44px;line-height:1.1;display:block}.v2-card-item .v2-card-name{font-weight:800;display:block;margin:4px 0}.v2-card-item .v2-card-line{font-size:14px;font-weight:600;color:#6f675a;display:block}";
     document.head.appendChild(s);
   }
   function getProfile() {
@@ -450,11 +453,15 @@
     } catch (e) {}
     return null;
   }
-  function questRow(label, p, target, claimed, action) {
+  /* Thiết kế lại 24/10: mỗi nhiệm vụ là một thẻ game — icon lớn, tên
+     ngắn, thanh tiến độ dày, số tiến độ, nút 🎁 Nhận khi đủ / Chưa đủ
+     khi chưa đủ / ✅ Đã nhận khi đã nhận. Giữ nguyên data-p34 action. */
+  function questRow(icon, label, p, target, claimed, action) {
     var pct = Math.min(100, Math.round(p * 100 / target));
-    var btn = claimed ? "<span class=\"done\">✅ Đã nhận</span>" : (p >= target ? "<button type=\"button\" data-p34=\"" + action + "\">🎁 Nhận thưởng</button>" : "<button type=\"button\" disabled>Chưa đủ</button>");
-    return "<div class=\"qrow\"><span style=\"min-width:220px\">" + escHtml(label) + "</span><span class=\"bar\"><span class=\"fill\" style=\"width:" + pct + "%\"></span></span><span>" + p + "/" + target + "</span>" + btn + "</div>";
+    var btn = claimed ? "<span class=\"done\">✅ Đã nhận</span>" : (p >= target ? "<button type=\"button\" class=\"v2-qbtn\" data-p34=\"" + action + "\">🎁 Nhận</button>" : "<button type=\"button\" disabled>Chưa đủ</button>");
+    return "<div class=\"v2-qcard\"><span class=\"v2-qicon\">" + icon + "</span><div class=\"v2-qmain\"><span class=\"v2-qname\">" + escHtml(label) + "</span><div class=\"v2-qbar\"><span class=\"v2-qfill\" style=\"width:" + pct + "%\"></span></div></div><span class=\"v2-qnum\">" + p + "/" + target + "</span>" + btn + "</div>";
   }
+  var ACH_ICONS = { "first-levelup": "🎓", "streak-7": "🔥", "master-1": "🧠", "master-5": "🏆", "reviews-10": "🔁", "sim-1": "📝" };
   function renderPanels() {
     if (typeof document === "undefined") return;
     var prof = getProfile();
@@ -500,45 +507,46 @@
     var qs = q.quests, s = q.streak;
     var bestStars = 0, k;
     if (prof.best) for (k in prof.best) if (prof.best[k] > bestStars) bestStars = prof.best[k];
+    /* Thiết kế lại 24/10 theo hướng game hơn, giảm text: bỏ các đoạn giải
+       thích dài trong từng panel (cách tính nhiệm vụ, đóng băng, khôi
+       phục, ghi chú thành tích, đoạn văn xu/trợ giúp ở cửa hàng). Các
+       giải thích thật cần được thu thành một dòng ghi chú duy nhất ở
+       cuối tab Nhiệm vụ trong index.html, không lặp trong từng panel. */
     var html = "";
     html += "<div class=\"v2-p34\" data-p34-panel=\"daily\"><h3>🎯 Nhiệm vụ hôm nay</h3>";
-    html += questRow("Hoàn thành 1 lượt chơi", qs.rounds.p, 1, qs.rounds.claimed, "claim-rounds");
-    html += questRow("Hoàn thành 1 lượt ôn lại câu sai", qs.review.p, 1, qs.review.claimed, "claim-review");
-    html += questRow("Kiếm 8 sao đúng lần đầu trong ngày", qs.stars.p, 8, qs.stars.claimed, "claim-stars");
-    html += "<p style=\"margin:6px 0\">Nhiệm vụ chỉ tính lượt chơi và lượt ôn đã hoàn thành, không tính chỉ mở game hay bấm nút. Sao nhiệm vụ mỗi chủ đề trong ngày chỉ tính lượt đầu tiên.</p></div>";
+    html += questRow("🎮", "Chơi 1 lượt", qs.rounds.p, 1, qs.rounds.claimed, "claim-rounds");
+    html += questRow("🔁", "Ôn 1 lượt", qs.review.p, 1, qs.review.claimed, "claim-review");
+    html += questRow("⭐", "8 sao hôm nay", qs.stars.p, 8, qs.stars.claimed, "claim-stars");
+    html += "</div>";
     html += "<div class=\"v2-p34\" data-p34-panel=\"weekly\"><h3>📅 Nhiệm vụ tuần</h3>";
-    html += questRow("Chơi 5 ngày khác nhau trong tuần, hoặc làm chủ 1 kĩ năng", (qs.weekly.days.length >= 5 || qs.weekly.masteredThisWeek) ? 1 : 0, 1, qs.weekly.claimed, "claim-weekly");
-    html += "<p style=\"margin:6px 0\">Đã chơi " + qs.weekly.days.length + " ngày trong tuần này · Thưởng: 30 xu.</p></div>";
+    html += questRow("📅", "5 ngày/tuần", (qs.weekly.days.length >= 5 || qs.weekly.masteredThisWeek) ? 1 : 0, 1, qs.weekly.claimed, "claim-weekly");
+    html += "</div>";
     if (qs.weakness.skills && qs.weakness.skills.length) {
-      html += "<div class=\"v2-p34\" data-p34-panel=\"weakness\"><h3>🎯 Nhiệm vụ ôn điểm yếu</h3><p style=\"margin:6px 0\">Ôn các kĩ năng: " + qs.weakness.skills.map(skillName).map(escHtml).join(" · ") + "</p>";
-      html += questRow("Hoàn thành 1 lượt ôn điểm yếu", qs.weakness.p, 1, qs.weakness.claimed, "claim-weakness") + "</div>";
+      html += "<div class=\"v2-p34\" data-p34-panel=\"weakness\"><h3>🎯 Ôn điểm yếu</h3>";
+      html += questRow("🎯", "Ôn 1 lượt yếu", qs.weakness.p, 1, qs.weakness.claimed, "claim-weakness");
+      html += "<p style=\"margin:6px 0;font-size:14px;font-weight:700\">" + qs.weakness.skills.map(skillName).map(escHtml).join(" · ") + "</p></div>";
     }
-    html += "<div class=\"v2-p34\" data-p34-panel=\"streak\"><h3>🔥 Chuỗi ngày học</h3><p style=\"margin:6px 0\">Chuỗi hiện tại: <b>" + s.current + " ngày</b> · Tốt nhất: <b>" + s.best + " ngày</b> · Đóng băng đang giữ: " + s.freezes + "/2 (30 xu/cái, mua trước ngày nghỉ, bảo vệ đúng 1 ngày vắng).</p>";
-    html += "<p style=\"margin:6px 0\">👻 So với chính bạn: chuỗi tốt nhất " + s.best + " ngày · sao tốt nhất " + bestStars + " sao/lượt. Không có bảng xếp hạng với người khác.</p>";
-    if (s.lost && s.recoveryDay) html += "<p style=\"margin:6px 0\">⚠️ Chuỗi " + s.lost + " ngày vừa bị đứt. Hoàn thành 3 lượt ôn trong hôm nay (trong 3 ngày sau khi đứt, 1 lần/30 ngày) để khôi phục.</p>";
-    html += "<div class=\"qrow\"><button type=\"button\" data-p34=\"buy-freeze\">❄️ Mua đóng băng (30 xu)</button></div></div>";
-    html += "<div class=\"v2-p34\" data-p34-panel=\"achievements\"><h3>🏅 Thành tích</h3><p style=\"margin:6px 0\">" + Object.keys(ACHIEVEMENTS).map(function (id) {
+    html += "<div class=\"v2-p34\" data-p34-panel=\"streak\"><h3>🔥 Chuỗi ngày</h3>";
+    html += "<div class=\"v2-qcard\"><span class=\"v2-qicon\">🔥</span><div class=\"v2-qmain\"><span class=\"v2-streak-big\">" + s.current + " <small>ngày</small></span><span class=\"v2-qname\">Tốt nhất: " + s.best + " ngày</span></div><span class=\"v2-qnum\">❄️ ×" + s.freezes + "</span><button type=\"button\" data-p34=\"buy-freeze\">❄️ Mua · 30 🪙</button></div>";
+    if (s.lost && s.recoveryDay) html += "<p style=\"margin:6px 0;font-weight:700\">⚠️ Đứt " + s.lost + " ngày — ôn 3 lượt để hồi chuỗi.</p>";
+    html += "</div>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"achievements\"><h3>🏅 Thành tích</h3><div class=\"v2-ach-grid\">" + Object.keys(ACHIEVEMENTS).map(function (id) {
       var got = q.achievements.indexOf(id) !== -1;
-      return (got ? "✅ " : "☐ ") + escHtml(ACHIEVEMENTS[id].name);
-    }).join(" · ") + "</p><p style=\"margin:6px 0\">Thành tích chỉ để ghi nhận, không tự sinh XP hay xu khi mở lại.</p></div>";
-    html += "<div class=\"v2-p34\" data-p34-panel=\"shop\"><h3>🛍️ Cửa hàng — chỉ bằng xu học được, không tiền thật</h3><p style=\"margin:6px 0\">Xu hiện có: <b>" + (prof.coins || 0) + "</b> · Trợ giúp: loại đáp án còn " + q.helpers.eliminate + ", gợi ý còn " + q.helpers.hint + " (tối đa 2 cái/lượt, cấm trong mô phỏng kiểm tra).</p>";
+      return "<div class=\"v2-ach" + (got ? "" : " locked") + "\"><span class=\"v2-ach-icon\">" + ACH_ICONS[id] + "</span><span class=\"v2-ach-name\">" + escHtml(ACHIEVEMENTS[id].name) + "</span><span>" + (got ? "✅" : "🔒") + "</span></div>";
+    }).join("") + "</div></div>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"shop\"><h3>🛍️ Cửa hàng</h3>";
+    html += "<div class=\"v2-shop-summary\"><div class=\"v2-shop-tile\">🪙<span class=\"v2-shop-num\">" + (prof.coins || 0) + "</span>Xu</div><div class=\"v2-shop-tile\">🔍<span class=\"v2-shop-num\">" + q.helpers.eliminate + "</span>Loại đáp án</div><div class=\"v2-shop-tile\">💡<span class=\"v2-shop-num\">" + q.helpers.hint + "</span>Gợi ý</div></div>";
+    html += "<div class=\"v2-shop-grid\">";
     Object.keys(SHOP).forEach(function (id) {
-      var it = SHOP[id];
-      if (it.kind === "helper") {
-        html += "<div class=\"qrow\"><span>" + it.emoji + " " + escHtml(it.name) + " — " + it.price + " xu</span><button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button></div>";
-      } else if (it.kind === "frame") {
-        var ownedF = q.ownedFrames.indexOf(id) !== -1;
-        html += "<div class=\"qrow\"><span>" + it.emoji + " " + escHtml(it.name) + " — " + it.price + " xu</span>" + (ownedF ? "<button type=\"button\" data-p34=\"frame-" + id + "\">Dùng khung này</button>" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>") + "</div>";
-      } else if (it.kind === "skin") {
-        var ownedS = q.ownedSkins.indexOf(id) !== -1;
-        html += "<div class=\"qrow\"><span>" + it.emoji + " " + escHtml(it.name) + " — " + it.price + " xu</span>" + (ownedS ? "<button type=\"button\" data-p34=\"skin-" + it.char + "\">Dùng nhân vật này</button>" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>") + "</div>";
-      } else {
-        var ownedR = q.ownedRare.indexOf(id) !== -1;
-        html += "<div class=\"qrow\"><span>" + it.emoji + " " + escHtml(it.name) + " — " + it.price + " xu" + (ownedR ? " · ✅ Đã sở hữu" : "") + "</span>" + (ownedR ? "" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>") + "</div>";
-      }
+      var it = SHOP[id], btn = "";
+      if (it.kind === "helper") btn = "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>";
+      else if (it.kind === "frame") btn = q.ownedFrames.indexOf(id) !== -1 ? "<button type=\"button\" data-p34=\"frame-" + id + "\">Dùng</button>" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>";
+      else if (it.kind === "skin") btn = q.ownedSkins.indexOf(id) !== -1 ? "<button type=\"button\" data-p34=\"skin-" + it.char + "\">Dùng</button>" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>";
+      else btn = q.ownedRare.indexOf(id) !== -1 ? "<span>✅ Đã có</span>" : "<button type=\"button\" data-p34=\"buy-" + id + "\">Mua</button>";
+      html += "<div class=\"v2-shop-item\"><span class=\"v2-shop-emoji\">" + it.emoji + "</span><span class=\"v2-shop-name\">" + escHtml(it.name) + "</span><span class=\"v2-shop-price\">" + it.price + " 🪙</span>" + btn + "</div>";
     });
-    html += "<div class=\"qrow\"><button type=\"button\" data-p34=\"frame-none\">Bỏ khung avatar</button></div></div>";
-    html += "<div class=\"v2-p34\" data-p34-panel=\"cards\"><h3>🃏 Bộ sưu tập thẻ kiến thức</h3><p style=\"margin:6px 0\">" + (q.cards.length ? q.cards.map(function (c) { return "🃏 <b>" + escHtml(c.name) + "</b> — " + escHtml(c.line); }).join("<br>") : "Chưa có thẻ nào. Làm chủ một kĩ năng (đúng lần đầu >= 80% trong 10 câu gần nhất, đã lên mức 3) để nhận thẻ.") + "</p></div>";
+    html += "</div><div class=\"qrow\"><button type=\"button\" data-p34=\"frame-none\">Bỏ khung avatar</button></div></div>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"cards\"><h3>🃏 Thẻ kiến thức</h3>" + (q.cards.length ? "<div class=\"v2-card-grid\">" + q.cards.map(function (c) { return "<div class=\"v2-card-item\"><span class=\"v2-card-emoji\">🃏</span><span class=\"v2-card-name\">" + escHtml(c.name) + "</span><span class=\"v2-card-line\">" + escHtml(c.line) + "</span></div>"; }).join("") + "</div>" : "<p style=\"margin:6px 0\">Chưa có thẻ nào — làm chủ 1 kĩ năng để nhận thẻ.</p>") + "</div>";
     host.innerHTML = html;
     applyFrame();
     renderHelperButtons();

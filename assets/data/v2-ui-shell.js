@@ -8,7 +8,10 @@
    - Panel Phase 3-4 được renderPanels() vẽ lại mỗi 3 giây vào host
      #v2-p34-panels (đang display:none để làm khu vực chờ), shell
      quan sát host bằng MutationObserver và phân phối lại ngay sau
-     mỗi lần vẽ, nên bấm tab không bao giờ thấy 2 bản sao.
+     mỗi lần vẽ. Sửa lặp 24/10: distributePanels() xoá bản cũ cùng
+     key và các panel không còn trong đợt mới trước khi append, và
+     không làm gì khi host rỗng (callback sau khi move), nên mỗi
+     panel luôn chỉ có đúng 1 bản trong tab.
    - Lớp 1-5: chỉ tab Học + Hồ sơ; hệ thống nặng vẫn tắt như cũ.
    - Màn đăng nhập và màn chơi ẩn header/bottom bar; overlay mô
      phỏng (z-index 9999) vẫn phủ trên cùng và không có trợ giúp.
@@ -96,9 +99,34 @@
     if (!host) return;
     var targets = { quests: $("v2-tab-quests-inner"), shop: $("v2-tab-shop-inner"), achievements: $("v2-tab-achievements-inner") };
     var panels = host.querySelectorAll ? host.querySelectorAll("[data-p34-panel]") : [];
+    /* Sửa lặp 24/10: panel đã move sang tab thì không còn là con của host,
+       nên lần render sau host.innerHTML mới không xoá được bản cũ trong
+       tab và shell lại append thêm bản mới — cứ 3 giây tab lại thêm một
+       bản sao. Cách sửa: chỉ phân phối khi host đang có một đợt render
+       mới (panels.length > 0); khi host rỗng (đợt callback sau khi move)
+       thì không làm gì, tránh xoá sạch tab. Trong một đợt mới, trước khi
+       append thì xoá bản cũ cùng data-p34-panel trong tab đích, và xoá
+       luôn các panel của tab đó không còn trong đợt mới (ví dụ weakness
+       biến mất khi hết kĩ năng yếu), nên mỗi panel luôn chỉ có đúng 1
+       bản trong tab sau mỗi chu kỳ. */
+    if (!panels.length) return;
+    var fresh = {};
+    panels.forEach(function (p) { fresh[p.getAttribute("data-p34-panel")] = true; });
+    Object.keys(targets).forEach(function (tab) {
+      var target = targets[tab];
+      if (!target || !target.querySelectorAll) return;
+      target.querySelectorAll("[data-p34-panel]").forEach(function (old) {
+        var key = old.getAttribute("data-p34-panel");
+        if (!fresh[key] && panelTab(key) === tab) old.remove();
+      });
+    });
     panels.forEach(function (panel) {
       var tab = panelTab(panel.getAttribute("data-p34-panel"));
-      if (tab && targets[tab]) targets[tab].appendChild(panel); /* move, không clone */
+      if (tab && targets[tab]) {
+        var key = panel.getAttribute("data-p34-panel");
+        targets[tab].querySelectorAll("[data-p34-panel=\"" + key + "\"]").forEach(function (old) { old.remove(); });
+        targets[tab].appendChild(panel); /* move, không clone */
+      }
     });
   }
   function syncShell() {
@@ -128,18 +156,22 @@
       if (badge) badge.hidden = true;
       if (dot) dot.hidden = true;
     }
-    /* Hồ sơ: tóm tắt chỉ đọc, không nhân bản nút chọn nhân vật/giọng. */
+    /* Hồ sơ: tóm tắt chỉ đọc, không nhân bản nút chọn nhân vật/giọng.
+       Thiết kế lại 24/10 theo hướng game hơn: tên/lớp một dòng ngắn,
+       các số liệu thành ô icon số lớn, thay cho đoạn văn nối bằng "·". */
     var sum = $("v2-profile-summary");
     if (sum && p) {
       var lvl = p.level || 1;
-      var sumHtml = "<b>" + (p.name || "") + "</b> · Lớp " + (p.grade || "") + (p.lop ? " · Lớp học " + p.lop : "") + " · ⭐ Tổng sao: " + (p.totalStars || 0) + " · Cấp " + lvl + " · " + (p.xp || 0) + " XP · 🪙 " + (p.coins || 0) + " xu";
+      var streakNow = (p.v2p34 && p.v2p34.streak) ? (p.v2p34.streak.current || 0) : 0;
+      var stat = function (icon, num, label) { return "<div class=\"v2-stat\"><span class=\"v2-stat-icon\">" + icon + "</span><span class=\"v2-stat-num\">" + num + "</span><span class=\"v2-stat-label\">" + label + "</span></div>"; };
+      var sumHtml = "<div class=\"v2-profile-name\">" + (p.name || "") + " · Lớp " + (p.grade || "") + (p.lop ? " · " + p.lop : "") + "</div><div class=\"v2-stat-grid\">" + stat("⭐", p.totalStars || 0, "Sao") + stat("🎓", lvl, "Cấp") + stat("✨", p.xp || 0, "XP") + stat("🪙", p.coins || 0, "Xu") + stat("🔥", streakNow, "Chuỗi") + "</div>";
       if (sum.innerHTML !== sumHtml) sum.innerHTML = sumHtml; /* chỉ gán khi đổi, tránh vòng lặp MutationObserver */
     }
     var ghost = $("v2-ghost-note");
     if (ghost && p && p.v2p34) {
       var bestStars = 0, k;
       if (p.best) for (k in p.best) if (p.best[k] > bestStars) bestStars = p.best[k];
-      var ghostText = "👻 So với chính bạn: chuỗi tốt nhất " + ((p.v2p34.streak && p.v2p34.streak.best) || 0) + " ngày · sao tốt nhất " + bestStars + " sao/lượt. Không có bảng xếp hạng với người khác.";
+      var ghostText = "👻 Kỷ lục của bạn: 🔥 " + ((p.v2p34.streak && p.v2p34.streak.best) || 0) + " ngày · ⭐ " + bestStars + " sao/lượt";
       if (ghost.textContent !== ghostText) ghost.textContent = ghostText;
     }
     var xpEl = $("v2-game-xp");
