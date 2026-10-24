@@ -1,14 +1,21 @@
-// V2 header redesign simulation test — NOT loaded by the game.
-// Checks the pure, testable parts of the new header:
+// V2 header simulation test — NOT loaded by the game.
+// Checks the pure, testable parts of the header:
 //  (1) miniDollSVG() returns the real wardrobe SVG doll (same outfit,
 //      skin tone and pet as the wardrobe screen), without the stage
 //      wrapper or the try-on note;
 //  (2) index.html still contains every old header control and stat
 //      (gender select, tone toggle, logout, streak, sound, settings,
-//      stars, XP, coins, badges) after the redesign, with the rarely
-//      used controls moved inside the 👤 menu panel, and the stars /
-//      coins / badges chips moved into the top-right currency row
-//      (before the streak chip), no longer under the XP bar.
+//      stars, XP, coins, badges), with the rarely used controls moved
+//      inside the 👤 menu panel;
+//  (3) RESTORE 25/10 (user order: "completely broken, restore to the
+//      version before I asked to move info to the top-right corner"):
+//      the header matches commit 23f73f7 exactly — the top-right
+//      currency cluster is GONE and the stars / coins / badges chips
+//      sit back in the chips row under the XP bar, as 23f73f7 had
+//      them. The only intentional exception to the 23f73f7 baseline
+//      is the wardrobe default-outfit safety (doll never undressed),
+//      which lives in v2-wardrobe.js and is covered by the wardrobe
+//      tests, not by the header markup.
 // Run: node tests/v2-header-simulation.js
 "use strict";
 var fs = require("fs"), path = require("path");
@@ -56,29 +63,34 @@ has(html, "v2-hd-lvl", "level circular badge exists");
 has(html, "v2-hd-xpbar", "thick XP bar exists");
 has(html, "v2-hd-chip", "stat chips exist");
 has(html, "/16 huy hiệu", "badges chip shows earned out of total");
-has(html, 'id="v2-hd-currency"', "currency row exists in the top-right cluster");
-eq(html.indexOf('id="v2-hd-currency"') < html.indexOf('id="v2-header-streak"'), true, "currency row comes before the streak chip in the top-right cluster");
-eq(html.indexOf('id="v2-hd-currency"') < html.indexOf('id="v2-header-sound"'), true, "currency row comes before the sound button in the top-right cluster");
-eq(html.indexOf('<div class="v2-hd-chips">') === -1, true, "chips row under the XP bar is gone");
-has(html, ".v2-hd-currency", "currency row is styled");
-eq(html.indexOf("v2-hd-currency { flex-basis: 100%") !== -1, true, "currency row takes its own wrapped row on narrow phones");
+eq(html.indexOf('id="v2-hd-currency"') === -1, true, "RESTORE: top-right currency cluster is gone");
+eq(html.indexOf(".v2-hd-currency") === -1, true, "RESTORE: no currency-row CSS remains");
+eq(html.indexOf('<div class="v2-hd-chips">') !== -1, true, "RESTORE: chips row is back under the XP bar");
 has(html, "Hộp ", "next milestone unlock line exists");
 eq(html.indexOf('<label class="v2-xp" for="v2-gender-sel">Giới tính:</label>') === -1, true, "old full-width gender row is gone");
 has(shell, "v2-header-menu", "ui shell toggles the header menu");
 has(html, "max-width: 560px", "narrow-phone media query exists");
 
-/* Phạm vi hẹp 25/10 (đính chính của người dùng): chỉ cụm sao/xu/huy
-   hiệu lên góc phải + 2 sửa lỗi, còn lại giữ nguyên như bản 23f73f7.
-   (a) Không còn bố cục grid 2 hàng của bản sửa vỡ layout trước đó;
-   khối cấp/XP vẫn là hàng .v2-hd-level gốc: vòng cấp kề khối XP,
-   số XP giữ nguyên câu đầy đủ "lên cấp". (b) Nền track thanh XP đậm
-   để nhìn thấy được ngay cả ở 0%. (c) Câu chuỗi ngày của feat-a1 giữ
-   nguyên như bản gốc, không rút gọn, không sửa búp bê hay vị trí nút. */
+/* KHÔI PHỤC 25/10 (lệnh của người dùng: vỡ hoàn toàn, khôi phục về
+   bản trước khi yêu cầu đưa thông tin lên góc trên bên phải, tức
+   commit 23f73f7): header khớp đúng 23f73f7 — vòng cấp kề khối XP,
+   số XP giữ nguyên câu đầy đủ "lên cấp", nền track thanh XP gốc
+   #f5ecd7, hàng chip sao/xu/huy hiệu nằm dưới thanh XP, câu chuỗi
+   ngày của feat-a1 giữ nguyên bản gốc. Ngoại lệ duy nhất so với
+   23f73f7 là bộ mặc định trong v2-wardrobe.js (búp bê không bao giờ
+   trần), được kiểm tra ở bộ test tủ đồ. */
 var renderFn = html.slice(html.indexOf("function renderProfileBar"), html.indexOf("function renderGradeTabs"));
 eq(html.indexOf('grid-template-areas: "doll top" "level level"') === -1, true, "no 2-row grid layout from the over-broad fix");
 eq(renderFn.indexOf("v2-hd-lvl") < renderFn.indexOf("v2-hd-xpwrap"), true, "level badge sits beside the XP block in the same row");
+eq(renderFn.indexOf("v2-hd-xpwrap") < renderFn.indexOf("v2-hd-chips"), true, "RESTORE: chips row comes after the XP block, under the XP bar");
 has(renderFn, "XP nữa lên cấp ", "XP numbers keep the full next-level phrase");
-has(html, ".v2-hd-xpbar { height: 18px; background: #f0dfba", "XP bar track is dark enough to see at 0%");
+has(html, ".v2-hd-xpbar { height: 18px; background: #f5ecd7", "RESTORE: XP bar track is the original 23f73f7 colour");
+var p3 = JSON.parse(JSON.stringify(p));
+p3.v2wardrobe = { owned: [], equipped: {}, tryOn: {}, variants: {}, outfits: [] };
+var miniBare = wd.miniDollSVG(p3);
+has(miniBare, 'data-layer="shirt"', "RESTORE: doll with empty outfit still renders a shirt (default outfit kept)");
+has(miniBare, 'data-layer="bottom"', "RESTORE: doll with empty outfit still renders pants (default outfit kept)");
+has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still renders shoes (default outfit kept)");
 var a1 = fs.readFileSync(path.join(__dirname, "..", "assets", "data", "feat-a1.js"), "utf8");
 has(a1, "học hôm nay để giữ chuỗi nhé!", "streak sentence is unchanged from the original");
 has(a1, "Huy hiệu: ", "streak area keeps its original badges mention (unchanged scope)");
