@@ -103,7 +103,10 @@ check("level-up detected crossing 100", r5.leveledUp === true && r5.levelBefore 
 profile.character = "fox";
 renderProfileBar();
 const barHtml = els["profile-bar"].innerHTML;
-check("profile bar avatar shows chosen fox", barHtml.includes('<span class="avatar">🦊</span>'), barHtml.slice(0, 80));
+// Header redesign 2026-10-25: the avatar is now the doll cell
+// (.v2-hd-doll, real SVG doll in the browser, emoji fallback here
+// because the wardrobe module is not loaded in this harness).
+check("profile bar avatar shows chosen fox", barHtml.includes("v2-hd-doll") && barHtml.includes("🦊"), barHtml.slice(0, 120));
 check("profile bar shows XP/level/coins", barHtml.includes("XP") && barHtml.includes("xu"), barHtml.slice(0, 300));
 
 console.log(failures === 0 ? "ALL CHECKS PASSED" : failures + " CHECK(S) FAILED");

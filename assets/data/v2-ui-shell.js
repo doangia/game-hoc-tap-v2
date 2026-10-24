@@ -143,6 +143,9 @@
     document.body.classList.toggle("v2-in-login", !!loginOn);
     document.body.classList.toggle("v2-in-game", !!gameOn);
     document.body.classList.toggle("v2-sim-open", simOpen);
+    /* Header: menu 👤 vẽ lại là đóng lại, đồng bộ aria-expanded. */
+    var menuBtn = $("v2-header-menu"), menuPanel = $("v2-hd-menu");
+    if (menuBtn && menuPanel && menuPanel.hidden) menuBtn.setAttribute("aria-expanded", "false");
     /* Header: chuỗi ngày + chấm đỏ nhiệm vụ + cảnh báo chuỗi. */
     var p = getProfile(), streakEl = $("v2-header-streak"), badge = $("v2-header-badge"), dot = $("v2-tab-dot-quests");
     if (p && p.v2p34) {
@@ -193,6 +196,19 @@
     var snd = $("v2-header-sound"), set = $("v2-header-settings");
     if (snd) snd.addEventListener("click", function () { openProfilePanel("sound-panel-home"); });
     if (set) set.addEventListener("click", function () { openProfilePanel("sound-panel-home"); });
+    /* Header mới: nút 👤 mở/đóng menu chứa giới tính, giọng và đổi
+       người chơi (các nút đó giữ nguyên id, listener vẫn do
+       renderProfileBar gắn mỗi lần vẽ lại header). Dùng delegation
+       trên #v2-header nên không mất handler khi header vẽ lại. */
+    var hdr = $("v2-header");
+    if (hdr) hdr.addEventListener("click", function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest("#v2-header-menu") : null;
+      if (!b) return;
+      var panel = $("v2-hd-menu");
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      b.setAttribute("aria-expanded", String(!panel.hidden));
+    });
     if (typeof MutationObserver !== "undefined") {
       var host = $("v2-p34-panels");
       if (host) new MutationObserver(function () { distributePanels(); syncShell(); }).observe(host, { childList: true });

@@ -433,6 +433,42 @@
       .v2-header-actions button { width: 46px; height: 46px; border-radius: 14px; background: #fff; border: 3px solid var(--line); font-size: 22px; cursor: pointer; }
       .v2-header-streak { font-weight: 800; font-size: 17px; }
       .v2-header-streak.at-risk { color: var(--coral); }
+      /* Header thiết kế lại (theo ảnh chụp của Danh): búp bê SVG thật
+         của tủ đồ ở bên trái, cấp + thanh XP dày ở giữa, các chỉ số
+         phụ thành chip, còn giới tính/giọng/đổi người chơi vào menu 👤.
+         Chỉ đổi giao diện, không đổi kinh tế hay luật nào. */
+      #v2-header .v2-header-actions { align-items: flex-start; }
+      #v2-header .v2-header-streak { background: #fff; border: 3px solid var(--line); border-radius: 14px; padding: 8px 10px; }
+      .profile-bar.v2-hd { align-items: flex-start; }
+      .v2-hd-doll { flex-shrink: 0; background: #fff; border: 3px solid var(--line); border-radius: 18px; box-shadow: 0 3px 0 var(--line); padding: 4px; line-height: 0; }
+      .v2-hd-doll svg { width: 78px; height: auto; display: block; border-radius: 12px; }
+      .v2-hd-doll .v2-hd-doll-fallback { font-size: 52px; line-height: 1; display: block; padding: 8px 4px; }
+      .v2-hd-main { flex: 1; min-width: 180px; }
+      .profile-bar.v2-hd .who { min-width: 0; }
+      .v2-hd-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+      .v2-hd-badge { background: #fff8e1; border: 2px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 14px; font-weight: 800; white-space: nowrap; }
+      .v2-hd-badge.grade { background: #ffe082; }
+      .v2-hd-badge.teen { background: #e8f3ff; border-color: var(--sky); }
+      .v2-hd-level { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+      .v2-hd-lvl { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ffb703, #ff6b4a); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 800; border: 3px solid #fff; box-shadow: 0 3px 0 var(--line); flex-shrink: 0; }
+      .v2-hd-xpwrap { flex: 1; min-width: 0; }
+      .v2-hd-xpnum { font-size: 14px; font-weight: 800; }
+      .v2-hd-xpbar { height: 18px; background: #f5ecd7; border: 3px solid var(--line); border-radius: 999px; overflow: hidden; margin: 4px 0; }
+      .v2-hd-xpfill { height: 100%; background: linear-gradient(90deg, #ffb703, #ff6b4a); border-radius: 999px; }
+      .v2-hd-next { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+      .v2-hd-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+      .v2-hd-chip { background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 14px; font-weight: 800; white-space: nowrap; }
+      .v2-hd-menu { flex-basis: 100%; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff8e1; border: 3px solid var(--line); border-radius: 16px; padding: 10px 12px; }
+      .v2-hd-menu[hidden] { display: none; }
+      .v2-hd-menu .v2-hd-menu-label { font-size: 15px; font-weight: 800; }
+      @media (max-width: 560px) {
+        #v2-header { flex-wrap: wrap; }
+        #v2-header #profile-bar { flex-basis: 100%; }
+        #v2-header .v2-header-actions { margin-left: auto; }
+        .v2-hd-doll svg { width: 64px; }
+        .v2-hd-lvl { width: 44px; height: 44px; font-size: 18px; }
+        .profile-bar.v2-hd { gap: 8px; }
+      }
       .v2-badge-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--coral); }
       .v2-badge-dot[hidden] { display: none; }
       #v2-bottombar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(860px, 100%); background: #fff; border-top: 3px solid var(--line); display: flex; gap: 4px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); z-index: 900; }
@@ -471,6 +507,7 @@
         <span id="v2-header-streak" class="v2-header-streak">🔥 0</span>
         <button id="v2-header-sound" type="button" aria-label="Âm thanh" title="Âm thanh">🔊</button>
         <button id="v2-header-settings" type="button" aria-label="Cài đặt" title="Cài đặt giọng">⚙️</button>
+        <button id="v2-header-menu" type="button" aria-label="Hồ sơ" title="Giới tính, giọng, đổi người chơi" aria-expanded="false" aria-controls="v2-hd-menu">👤</button>
         <span id="v2-header-badge" class="v2-badge-dot" hidden></span>
       </div>
     </header>
@@ -545,7 +582,7 @@
         <div id="v2-tab-profile" class="v2-tab-panel" hidden>
           <div id="v2-profile-summary" class="v2-profile-summary"></div>
           <div id="v2-wardrobe-kids"></div>
-          <p class="v2-profile-note">Nhân vật, giọng và đổi người chơi ở thanh đầu trang phía trên.</p>
+          <p class="v2-profile-note">Nhân vật, giọng và đổi người chơi ở nút 👤 trên thanh đầu trang phía trên.</p>
 <div class="panel-toggle-row">
           <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
           <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn báo lỗi câu hỏi" title="Báo lỗi" aria-expanded="false" onclick="var p=document.getElementById('report-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🚩</button>
@@ -6312,7 +6349,32 @@ window.__ensureGrade = function (g, cb) {
       /* v2 Wardrobe 25/10: nhân vật chính là người — header chỉ chọn
          giới tính (thú cũ đã thành thú cưng, chọn trong tủ đồ). */
       var genderOpts = '<option value="male"'+(profile.gender==="male"?' selected':'')+'>👦 Nam</option><option value="female"'+(profile.gender==="female"?' selected':'')+'>👧 Nữ</option>';
-      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-gender-sel">Giới tính:</label><select class="char-sel" id="v2-gender-sel" aria-label="Chọn giới tính nhân vật">'+genderOpts+'</select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
+      /* Header thiết kế lại (theo ảnh chụp của Danh): búp bê SVG thật
+         của tủ đồ (đang mặc gì, thú cưng nào) thay cho emoji rời rạc;
+         cấp + thanh XP dày có số; sao/xu/huy hiệu thành chip; còn
+         giới tính/giọng/đổi người chơi vào menu 👤 ở cụm icon phải.
+         Giữ nguyên id v2-gender-sel, btn-tone-toggle, btn-logout và
+         listener bên dưới, nên mọi nút vẫn hoạt động như cũ. */
+      var dollMini = "";
+      try { if (window.__v2wardrobe && window.__v2wardrobe.miniDollSVG) dollMini = window.__v2wardrobe.miniDollSVG(profile) || ""; } catch (e) {}
+      var dollCell = dollMini ? '<div class="v2-hd-doll">' + dollMini + '</div>' : '<div class="v2-hd-doll"><span class="v2-hd-doll-fallback">' + ch + '</span></div>';
+      var xpLeft = Math.max(0, prog.next - (profile.xp || 0));
+      var nextLine = "";
+      try {
+        if (window.__v2wardrobe && window.__v2wardrobe.BOXES) {
+          var boxes = window.__v2wardrobe.BOXES, nb = null, bi;
+          for (bi = 0; bi < boxes.length; bi++) { if (boxes[bi].level > prog.level) { nb = boxes[bi]; break; } }
+          if (!nb) nextLine = "🎁 Đã mở hết hộp quà mốc cấp!";
+          else if (nb.level === prog.level + 1) nextLine = "🎁 Lên cấp " + nb.level + " mở hộp " + nb.tier + "!";
+          else nextLine = "🎁 Hộp " + nb.tier + " đang chờ ở cấp " + nb.level;
+        }
+      } catch (e) {}
+      /* Huy hiệu feat-a1: đọc thẳng key localStorage của nó; số 16 là
+         số huy hiệu trong danh sách BADGES của feat-a1 (đếm 2026-10-25),
+         nếu danh sách đó đổi thì cập nhật số này cho khớp. */
+      var badgeEarned = 0;
+      try { var bd = JSON.parse(localStorage.getItem("gameHocTap_badges_v1") || "{}"); if (bd && bd.earned) badgeEarned = Object.keys(bd.earned).length; } catch (e) {}
+      bar.innerHTML = '<div class="profile-bar v2-hd">' + dollCell + '<div class="v2-hd-main"><div class="who"><div class="nm">' + profile.name + '</div><div class="v2-hd-badges"><span class="v2-hd-badge grade">Lớp ' + profile.grade + '</span>' + (profile.lop ? '<span class="v2-hd-badge">Lớp học ' + profile.lop + '</span>' : '') + '<span class="v2-hd-badge teen">' + toneLabel + '</span></div></div><div class="v2-hd-level"><span class="v2-hd-lvl">' + prog.level + '</span><div class="v2-hd-xpwrap"><div class="v2-hd-xpnum">✨ ' + (profile.xp || 0) + ' / ' + prog.next + ' XP · còn ' + xpLeft + ' XP nữa lên cấp ' + (prog.level + 1) + '</div><div class="v2-hd-xpbar"><div class="v2-hd-xpfill" style="width:' + prog.pct + '%"></div></div>' + (nextLine ? '<div class="v2-hd-next">' + nextLine + '</div>' : '') + '</div></div><div class="v2-hd-chips"><span class="v2-hd-chip">⭐ ' + (profile.totalStars || 0) + ' sao</span><span class="v2-hd-chip">🪙 ' + (profile.coins || 0) + ' xu</span><span class="v2-hd-chip">🏅 ' + badgeEarned + '/16 huy hiệu</span></div></div><div class="v2-hd-menu" id="v2-hd-menu" hidden><span class="v2-hd-menu-label">Giới tính nhân vật:</span><select class="char-sel" id="v2-gender-sel" aria-label="Chọn giới tính nhân vật">' + genderOpts + '</select><button class="small-btn" id="btn-tone-toggle">' + (profile.tone === "teen" ? "🧒 Giọng nhỏ" : "🎓 Giọng teen") + '</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div></div>';
       var sel = el("v2-gender-sel");
       if (sel) sel.addEventListener("change", function(){ if (sel.value==="male"||sel.value==="female") { if (window.__v2wardrobe && window.__v2wardrobe.setGender) window.__v2wardrobe.setGender(profile, sel.value); else { profile.gender = sel.value; saveProfile(); } renderProfileBar(); } });
       var tg = el("btn-tone-toggle");

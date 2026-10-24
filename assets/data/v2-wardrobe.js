@@ -864,6 +864,17 @@
     return "<div class=\"v2-doll-stage" + (big ? " v2-doll-big" : "") + "\" style=\"background:" + grad + "\">" + svg + "</div>" + tryNote;
   }
 
+  /* Búp bê thu nhỏ cho header: chỉ lấy thẻ <svg> từ dollHTML (đã gồm
+     nền, thú cưng và toàn bộ trang phục đang mặc), bỏ khung sân khấu
+     và ghi chú mặc thử, để header dùng đúng búp bê của tủ đồ. */
+  function miniDollSVG(profile) {
+    try {
+      var full = dollHTML(profile, false);
+      var s = full.indexOf("<svg"), e = full.indexOf("</svg>");
+      if (s === -1 || e === -1) return "";
+      return full.slice(s, e + 6);
+    } catch (err) { return ""; }
+  }
   function itemTileHTML(profile, it, mode, teen) {
     var w = ensureWardrobe(profile), owned = w.owned.indexOf(it.id) !== -1;
     var eq = effectiveEquipped(profile), wearing = eq[it.slot] === it.id && !w.tryOn[it.slot];
@@ -1267,7 +1278,7 @@
     buyItem: buyItem, setVariant: setVariant, resolveSetItems: resolveSetItems,
     setStatus: setStatus, wearSet: wearSet, buySet: buySet,
     saveOutfit: saveOutfit, applyOutfit: applyOutfit, deleteOutfit: deleteOutfit, renameOutfit: renameOutfit,
-    recordAnswer: recordAnswer, effectiveEquipped: effectiveEquipped, dollHTML: dollHTML,
+    recordAnswer: recordAnswer, effectiveEquipped: effectiveEquipped, dollHTML: dollHTML, miniDollSVG: miniDollSVG,
     dollLayers: dollLayers, itemThumbSVG: itemThumbSVG,
     faceEmoji: faceEmoji, variantOf: variantOf, colorHexOf: colorHexOf
   };
