@@ -94,6 +94,13 @@ var miniBare = wd.miniDollSVG(p3);
 has(miniBare, 'data-layer="shirt"', "RESTORE: doll with empty outfit still renders a shirt (default outfit kept)");
 has(miniBare, 'data-layer="bottom"', "RESTORE: doll with empty outfit still renders pants (default outfit kept)");
 has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still renders shoes (default outfit kept)");
+/* 25/10, theo ý Danh: bảng chọn lớp không hiện mặc định trên trang
+   chính khi người chơi đã chọn lớp lúc đăng nhập; chỉ hiện khi bấm
+   Đổi lớp. Bảng chọn lớp lúc đăng nhập vẫn giữ nguyên. */
+has(html, 'id="v2-grade-change-btn"', "home has a small Change-grade button");
+has(html, 'id="v2-grade-picker-wrap" hidden', "home grade picker starts hidden");
+eq(html.indexOf("Chọn lớp rồi chạm") === -1, true, "home greeting no longer tells the player to pick a grade");
+has(html, 'id="login-grades"', "login grade picker is untouched");
 var a1 = fs.readFileSync(path.join(__dirname, "..", "assets", "data", "feat-a1.js"), "utf8");
 eq(a1.indexOf('who.appendChild(line)') === -1, true, "DEMO v8: feat-a1 no longer appends the duplicate streak/badges line to the header");
 has(a1, "decorateProfileBar", "decorate function still exists so the render wrapper stays safe");

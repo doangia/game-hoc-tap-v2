@@ -556,10 +556,17 @@
 <div class="hello">
           <span class="mascot" aria-hidden="true">🦉</span>
           <h1>Hôm nay học gì nào?</h1>
-          <p>Chọn lớp rồi chạm vào một môn để bắt đầu chơi nhé!</p>
+          <p>Chạm vào một môn để bắt đầu chơi nhé!</p>
         </div>
-        <span class="field-label">Chọn lớp</span>
-        <div class="grade-tabs" id="grade-tabs"></div>
+        <!-- 25/10, theo ý Danh: bảng chọn lớp không hiện mặc định trên
+             trang chính nữa vì người chơi đã chọn lớp lúc đăng nhập
+             (lớp hiện tại đã hiện ở header); chỉ hiện khi bấm Đổi lớp,
+             và việc đổi lớp vẫn cập nhật profile như cũ. -->
+        <button class="small-btn" id="v2-grade-change-btn" type="button" aria-expanded="false" aria-controls="v2-grade-picker-wrap">Đổi lớp</button>
+        <div id="v2-grade-picker-wrap" hidden>
+          <span class="field-label">Chọn lớp</span>
+          <div class="grade-tabs" id="grade-tabs"></div>
+        </div>
         <div class="subj-grid" id="subject-dynamic"></div>
         <div class="subject-grid" id="legacy-grid" style="display:none">
           <button class="subject-card math" id="btn-math">
@@ -3530,6 +3537,7 @@ function valueKeyOf(html) {
     el("btn-again").addEventListener("click", function () { if (game) startGame(game.title, game.pools); });
     el("btn-other-topic").addEventListener("click", function () { if (currentSubject) openTopics(currentSubject); });
     el("btn-home2").addEventListener("click", function () { show("scr-home"); });
+    (function(){ var b = el("v2-grade-change-btn"); if (b) b.addEventListener("click", function(){ var w = el("v2-grade-picker-wrap"); if (!w) return; var open = w.hasAttribute("hidden"); if (open) w.removeAttribute("hidden"); else w.setAttribute("hidden", ""); b.setAttribute("aria-expanded", open ? "true" : "false"); b.textContent = open ? "Thu gọn" : "Đổi lớp"; }); })();
     
 </script>
 <script>    "use strict";
@@ -6442,7 +6450,7 @@ window.__ensureGrade = function (g, cb) {
         card.addEventListener("click", function(){ openSubject(subj); });
         grid.appendChild(card);
       });
-      renderGradeTabs("grade-tabs", currentGrade, function(g){ currentGrade = g; if (profile) { profile.grade = g; saveProfile(); } renderSubjects(); renderProfileBar(); }, null);
+      renderGradeTabs("grade-tabs", currentGrade, function(g){ currentGrade = g; if (profile) { profile.grade = g; saveProfile(); } renderSubjects(); renderProfileBar(); var w = el("v2-grade-picker-wrap"), b = el("v2-grade-change-btn"); if (w) w.setAttribute("hidden", ""); if (b) { b.setAttribute("aria-expanded", "false"); b.textContent = "Đổi lớp"; } }, null);
     }
     function openSubject(subj){
       currentSubject = subj;
