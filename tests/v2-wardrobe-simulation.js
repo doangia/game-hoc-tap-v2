@@ -201,7 +201,10 @@ eq(html1.indexOf('data-layer="hat"') !== -1 && html1.indexOf('data-layer="shirt"
 eq(html1.indexOf("🧢") === -1 && html1.indexOf("👕") === -1 && html1.indexOf("👖") === -1 && html1.indexOf("👟") === -1, true, "doll no longer uses emoji clothing");
 m.unequipSlot(pd, "shirt");
 var html2 = m.dollHTML(pd, false);
-eq(html2.indexOf('data-layer="shirt"') === -1, true, "removing shirt removes only the shirt layer");
+/* Sửa 25/10: cởi áo không để búp bê trần — áo quay về áo thun mặc
+   định, còn các lớp khác vẫn nguyên. */
+eq(m.effectiveEquipped(pd).shirt, "shirt-tee", "removing shirt falls back to the default tee");
+eq(html2.indexOf('data-layer="shirt"') !== -1, true, "doll is never bare after removing the shirt");
 eq(html2.indexOf('data-layer="hat"') !== -1 && html2.indexOf('data-layer="bottom"') !== -1, true, "other layers survive a slot change");
 /* Dress covers the shirt layer */
 var pdr = teenProfile(1000);
@@ -259,5 +262,24 @@ eq(m.dollHTML(pMaleFull, true).indexOf("<svg") !== -1, true, "male full outfit r
 var pFemFull = teenProfile(1000); pFemFull.gender = "female";
 m.buyItem(pFemFull, "hair-f-long"); m.buyItem(pFemFull, "dress-long"); m.buyItem(pFemFull, "shoes-doll"); m.buyItem(pFemFull, "hat-wide");
 eq(m.dollHTML(pFemFull, true).indexOf('data-layer="dress"') !== -1, true, "female full dress renders big SVG preview");
+
+/* 14. Default outfit (sửa 25/10): búp bê không bao giờ trần */
+var pBare = teenProfile(1000); pBare.gender = "male";
+m.ensureWardrobe(pBare);
+var bareEq = m.effectiveEquipped(pBare);
+eq(bareEq.shirt, "shirt-tee", "empty equipped set still renders a default shirt");
+eq(bareEq.bottom, "pants-long", "empty equipped set still renders default pants");
+eq(bareEq.shoes, "shoes-sport", "empty equipped set still renders default shoes");
+var bareHtml = m.dollHTML(pBare, false);
+eq(bareHtml.indexOf('data-layer="shirt"') !== -1 && bareHtml.indexOf('data-layer="bottom"') !== -1 && bareHtml.indexOf('data-layer="shoes"') !== -1, true, "bare profile doll draws shirt, pants and shoes");
+eq(m.miniDollSVG(pBare).indexOf('data-layer="shirt"') !== -1, true, "header miniature of a bare profile also wears the default shirt");
+var pMig = teenProfile(1000); pMig.gender = "female";
+var mig = m.migrateHuman(pMig);
+eq(pMig.v2wardrobe.equipped.shirt, "shirt-tee", "migration stores the default shirt as equipped");
+eq(pMig.v2wardrobe.owned.indexOf("pants-long") !== -1, true, "migration grants the default pants as owned");
+var pDressBare = teenProfile(1000); pDressBare.gender = "female";
+m.buyItem(pDressBare, "dress-long");
+var dressLayers = m.dollLayers(pDressBare);
+eq(dressLayers.indexOf("dress") !== -1 && dressLayers.indexOf("shirt") === -1, true, "a dress still covers the shirt layer even with the default outfit");
 
 console.log("ALL CHECKS PASSED (" + n + " checks)");

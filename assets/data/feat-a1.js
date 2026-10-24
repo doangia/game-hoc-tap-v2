@@ -41,7 +41,7 @@
   var css = [
     ".subj-card.a1-wrong-card{grid-column:1/-1;background:linear-gradient(135deg,#2e8b6e,#43aa8b);min-height:0;padding:16px 12px}",
     ".subj-card.a1-daily-card{grid-column:1/-1;background:linear-gradient(135deg,#e07b39,#f2a541);min-height:0;padding:16px 12px}",
-    ".a1-bar-extra{font-size:14px;font-weight:700;color:var(--ink-soft,#6f675a);margin-top:2px}",
+    ".a1-bar-extra{font-size:14px;font-weight:700;color:var(--ink-soft,#6f675a);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     "#a1-toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,480px)}",
     ".a1-toast{background:#fffdf6;border:3px solid var(--sun,#ffb703);color:var(--ink,#33302a);border-radius:16px;padding:10px 18px;font-weight:800;font-size:17px;box-shadow:0 10px 26px rgba(90,70,20,.25);text-align:center;transition:opacity .35s;max-width:100%}",
     ".a1-toast.out{opacity:0}",
@@ -567,14 +567,18 @@
     var who = bar.querySelector(".who");
     if (!who) return;
     var st = computeStreak(loadActivity());
-    var earned = Object.keys(loadBadges().earned).length;
-    var line = document.createElement("div");
-    line.className = "a1-bar-extra";
+    /* Sửa vỡ header 25/10: dòng này từng là câu dài quấn nhiều dòng
+       ("Chuỗi học: … — học hôm nay để giữ chuỗi nhé! • Huy hiệu:
+       …") chèn vào .who, làm cột chính phình ra và đẩy khối cấp/XP
+       lệch xuống. Nay chỉ còn một chip ngắn một dòng, và KHÔNG còn
+       nhắc huy hiệu ở đây nữa (huy hiệu chỉ sống ở chip góc phải
+       trên của header). Tái dùng dòng cũ nếu đã có, tránh nhân đôi
+       khi hàm chạy nhiều lần mà header không vẽ lại. */
+    var line = who.querySelector(".a1-bar-extra");
+    if (!line) { line = document.createElement("div"); line.className = "a1-bar-extra"; who.appendChild(line); }
     line.textContent = st.n > 0
-      ? ("🔥 Chuỗi học: " + st.n + " ngày" + (st.today ? "" : " — học hôm nay để giữ chuỗi nhé!"))
-      : "🔥 Học hôm nay để bắt đầu chuỗi ngày học nhé!";
-    if (earned > 0) line.textContent += " • 🏅 Huy hiệu: " + earned + "/" + BADGES.length;
-    who.appendChild(line);
+      ? ("🔥 Chuỗi: " + st.n + " ngày" + (st.today ? "" : " · học hôm nay nhé!"))
+      : "🔥 Học hôm nay để bắt đầu chuỗi!";
   }
   function refreshA1UI() {
     try { renderProfileBar(); } catch (e) {}

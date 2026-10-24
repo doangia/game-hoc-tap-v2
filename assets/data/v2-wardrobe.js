@@ -249,6 +249,17 @@
         if (sit && sit.gender !== "both" && sit.gender !== profile.gender) delete w.equipped[slots[si]];
       }
     }
+    /* Lưu hẳn trang phục mặc định vào equipped + owned (miễn phí,
+       món cấp 1 dùng chung): cởi áo/quần/giày ở tủ đồ cũng chỉ quay
+       về bộ mặc định này chứ không bao giờ để búp bê trần. Chạy
+       lũy đẳng, gọi mỗi lần vẽ đều an toàn. */
+    var ds;
+    for (ds in DEFAULT_OUTFIT) {
+      if (!w.equipped[ds]) {
+        w.equipped[ds] = DEFAULT_OUTFIT[ds];
+        if (w.owned.indexOf(DEFAULT_OUTFIT[ds]) === -1) w.owned.push(DEFAULT_OUTFIT[ds]);
+      }
+    }
     return { needsGate: !(profile.gender === "male" || profile.gender === "female") };
   }
   function setGender(profile, gender) {
@@ -556,9 +567,26 @@
     saveNow(profile);
     return w;
   }
+  /* Trang phục mặc định: búp bê KHÔNG BAO GIỜ được vẽ trần (sửa
+     25/10 sau ảnh chụp header thấy búp bê không áo/quần). Áo thun,
+     quần dài và giày thể thao đều là món "both" cấp 1 nên an toàn
+     cho cả nam và nữ. Áp dụng ở đây (mức vẽ) để mọi nơi dùng
+     effectiveEquipped — header thu nhỏ lẫn tủ đồ — đều có đồ mặc,
+     kể cả hồ sơ chưa qua migrateHuman; migrateHuman bên dưới còn
+     lưu hẳn ba món này vào equipped + owned. */
+  var DEFAULT_OUTFIT = { shirt: "shirt-tee", bottom: "pants-long", shoes: "shoes-sport" };
+  /* Màu mặc định của bộ khởi đầu (tránh trường hợp màu đầu tiên của
+     danh sách là Trắng khiến cả bộ trắng xóa trên nền kem): áo xanh
+     dương, quần xanh lá, giày đỏ — người chơi đổi màu miễn phí sau. */
+  var DEFAULT_OUTFIT_VARIANTS = { "shirt-tee": "Xanh dương", "pants-long": "Xanh lá", "shoes-sport": "Đỏ" };
   function effectiveEquipped(profile) {
     var w = ensureWardrobe(profile), out = {}, s;
     SLOTS.forEach(function (slot) { out[slot] = w.tryOn[slot] || w.equipped[slot] || null; });
+    if (!out.bottom) out.bottom = DEFAULT_OUTFIT.bottom;
+    if (!out.shoes) out.shoes = DEFAULT_OUTFIT.shoes;
+    var isDress = out.bottom && ITEMS[out.bottom] && ITEMS[out.bottom].kind === "dress";
+    if (!isDress && !out.shirt) out.shirt = DEFAULT_OUTFIT.shirt;
+    for (s in DEFAULT_OUTFIT_VARIANTS) if (!w.variants[s]) w.variants[s] = DEFAULT_OUTFIT_VARIANTS[s];
     return out;
   }
   function variantOf(profile, id) {
