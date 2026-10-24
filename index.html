@@ -420,6 +420,7 @@
       <!-- HOME -->
       <section class="screen" id="scr-home">
         <div id="profile-bar"></div>
+        <div class="panel-toggle-row"><button class="sound-master" id="v2-review-btn" type="button" hidden>🔁 Ôn lại câu sai</button></div>
         <div class="panel-toggle-row">
           <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
           <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn báo lỗi câu hỏi" title="Báo lỗi" aria-expanded="false" onclick="var p=document.getElementById('report-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🚩</button>
@@ -435,7 +436,8 @@
             <button class="sw-row on" data-audio-toggle="music" type="button" aria-pressed="true"><span class="sw-label">🎵 Nhạc nền</span><span class="sw-track"><span class="sw-knob"></span></span></button>
             <button class="sw-row on" data-audio-toggle="sfx" type="button" aria-pressed="true"><span class="sw-label">🔔 Hiệu ứng</span><span class="sw-track"><span class="sw-knob"></span></span></button>
           </div>
-          <div class="sound-note">🎙️ Giọng đọc câu hỏi: <select id="voice-route-sel" class="route-sel" aria-label="Chọn giọng đọc câu hỏi"><option value="auto">Tự động (ưu tiên giọng của máy)</option><option value="device">Giọng của máy</option></select><br />Giọng đọc dùng giọng tiếng Việt có sẵn trên máy của em. Câu khen luôn là giọng nữ thu sẵn trong game.</div>
+          <div class="sound-note">🎙️ Giọng đọc câu hỏi: <select id="voice-route-sel" class="route-sel" aria-label="Chọn giọng đọc câu hỏi"><option value="auto">Tự động (Edge nếu có, rồi giọng máy)</option><option value="device">Giọng của máy</option><option value="prerecorded">Thu sẵn + giọng máy cho câu hỏi</option><option value="edge">Edge (thử Edge, lỗi thì giọng máy)</option></select><br />Giọng tiếng Việt trên máy: <select id="voice-name-sel" class="route-sel" aria-label="Chọn giọng tiếng Việt trên máy"><option value="">Tự động chọn giọng tốt nhất</option></select><br />Câu cố định luôn dùng giọng nữ thu sẵn trong game; câu hỏi động dùng tuyến đã chọn.</div>
+          <div class="sound-note" id="voice-diag">Chẩn đoán giọng đọc: đang kiểm tra…</div>
           <div class="sound-note voice-warn" id="voice-warn" hidden>⚠️ Thiết bị này chưa có giọng nói hệ thống; câu khen thu sẵn vẫn phát bình thường — phần đọc câu hỏi và nghe tiếng Anh cần máy có sẵn giọng đọc.</div>
           <div class="sound-note">Câu khen dùng giọng nữ thu sẵn ngay trong game — máy nào cũng nghe giống nhau, không cần cài thêm giọng cho máy. Bố mẹ có thể tắt từng loại âm thanh ở đây, lựa chọn được nhớ cho lần chơi sau.</div>
         </div>
@@ -1446,11 +1448,12 @@
 
     /* ================= Âm thanh: cài đặt + nhạc nền + hiệu ứng + giọng nói ================= */
     var AUDIO_LS_KEY = "gameHocTap_audio_v1";
-    var audioSettings = { voice: true, music: true, sfx: true, voiceRoute: "auto" };
+    var audioSettings = { voice: true, music: true, sfx: true, voiceRoute: "auto", viVoiceName: "" };
     try {
       var savedAudio = localStorage.getItem(AUDIO_LS_KEY);
       if (savedAudio) { var parsedAudio = JSON.parse(savedAudio); for (var ak in audioSettings) if (typeof parsedAudio[ak] === "boolean") audioSettings[ak] = parsedAudio[ak]; }
-      if (parsedAudio && (parsedAudio.voiceRoute === "auto" || parsedAudio.voiceRoute === "device")) audioSettings.voiceRoute = parsedAudio.voiceRoute; /* bản chốt v18: giá trị cũ "packaged" tự rơi về mặc định "auto" */
+      if (parsedAudio && typeof parsedAudio.viVoiceName === "string") audioSettings.viVoiceName = parsedAudio.viVoiceName;
+      if (parsedAudio && (parsedAudio.voiceRoute === "auto" || parsedAudio.voiceRoute === "device" || parsedAudio.voiceRoute === "prerecorded" || parsedAudio.voiceRoute === "edge")) audioSettings.voiceRoute = parsedAudio.voiceRoute; /* v2: giá trị cũ "packaged" tự rơi về mặc định "auto" */
     } catch (e) { /* dùng mặc định: cả 3 đều bật, giọng đọc Tự động */ }
     function saveAudioSettings() { try { localStorage.setItem(AUDIO_LS_KEY, JSON.stringify(audioSettings)); } catch (e) {} }
     var audioCtx = null;
@@ -1597,17 +1600,33 @@
     function updateVoiceWarn() {
       var w = el("voice-warn");
       if (!w) return;
-      /* v18: câu khen (MP3 thu sẵn) + giọng đọc câu hỏi (bộ đọc tích hợp)
-         không còn phụ thuộc giọng của máy → chỉ cảnh báo khi thiết bị
-         không có BẤT KỲ cơ chế giọng nói hệ thống nào (ảnh hưởng duy
-         nhất tới phần nghe tiếng Anh dùng giọng máy). */
+      /* v2: giữ cảnh báo gốc khi không có speechSynthesis, và thêm cảnh báo
+         khi danh sách voice đã nạp xong nhưng không có voice tiếng Việt
+         (trường hợp Chrome điển hình, khác Edge có voice online). Chỉ cảnh
+         báo khi voiceListReady để không cảnh báo giả trong lúc đang nạp. */
       var showWarn = false;
       if (!("speechSynthesis" in window)) showWarn = true;
+      else if (voiceListReady && !viVoiceForDevice() && !(isEdgeBrowser() && (voiceRouteMode() === "auto" || voiceRouteMode() === "edge"))) {
+        showWarn = true;
+        try { w.textContent = "⚠️ " + VI_VOICE_GUIDE; } catch (e) {}
+      }
       w.hidden = !showWarn;
+      try { updateVoiceDiag(); } catch (e) {}
     }
-    function findFallbackVoice() {
-      /* Máy không có giọng tiếng Việt: vẫn đọc bằng giọng mặc định tốt nhất (ưu tiên giọng nữ) để bé luôn nghe thấy tiếng khen, không im lặng */
-      var voices = refreshVoices();
+    function findFallbackVoice(langPrefix) {
+      /* v2 — CHÍNH SÁCH MỚI: chặt chẽ theo ngôn ngữ, thay chính sách cũ
+         "không im lặng, cứ đọc bằng giọng mặc định". Hàm này CHỈ chọn
+         voice có lang bắt đầu bằng langPrefix ("vi" hoặc "en"); không có
+         voice cùng ngôn ngữ thì trả null, TUYỆT ĐỐI không rớt sang ngôn
+         ngữ khác (ví dụ: không bao giờ lấy voice tiếng Anh để đọc chữ
+         tiếng Việt, và ngược lại). Gọi không kèm langPrefix cũng trả null
+         để tránh vô tình dùng sai ngôn ngữ. Khi trả null, tầng gọi phải
+         hiện cảnh báo + hiện chữ, không phát lén bằng giọng sai ngôn ngữ. */
+      if (!langPrefix) return null;
+      var prefix = String(langPrefix).toLowerCase();
+      var voices = refreshVoices().filter(function (v) {
+        return v.lang && String(v.lang).toLowerCase().replace("_", "-").indexOf(prefix) === 0;
+      });
       if (!voices.length) return null;
       var femaleKeys = ["female", "woman", "girl", "zira", "samantha", "jenny", "aria", "eva", "linh", "hoaimy", "hoai my", "nữ"];
       var best = null, bestScore = -1;
@@ -1620,23 +1639,16 @@
       return best || voices[0];
     }
     /* ---------- Giọng nói: tiếng Anh (từ vựng) + tiếng Việt giọng nữ (khen / động viên) ---------- */
-    function speak(text) {
+    function speak(text, onDone) {
+      /* v2 — đọc từ tiếng Anh: CHỈ dùng voice tiếng Anh đã chấm điểm.
+         Không bao giờ để u.voice trống để trình duyệt rớt về voice mặc
+         định tiếng Việt, và không bao giờ dùng giọng vi cho chữ en.
+         Không có voice en thì bỏ qua êm ở đường tự phát này (không spam
+         cảnh báo); nút nghe chủ động (speakStimulus) mới hiện cảnh báo. */
       if (!audioSettings.voice) return;
-      try {
-        if (!("speechSynthesis" in window)) return;
-        window.speechSynthesis.cancel();
-        var u = new SpeechSynthesisUtterance(text);
-        u.lang = "en-US"; u.rate = 0.85; u.pitch = 1.05;
-        var voices = refreshVoices();
-        for (var i = 0; i < voices.length; i++) {
-          if (voices[i].lang && voices[i].lang.indexOf("en") === 0) { u.voice = voices[i]; break; }
-        }
-        u.onstart = function () { duckMusic(true); };
-        u.onend = u.onerror = function () { duckMusic(false); };
-        window.speechSynthesis.speak(u);
-        setTimeout(function () { duckMusic(false); }, 2500);
-      } catch (e) { /* không có giọng đọc thì bỏ qua */ }
+      speakEnInternal(text, null, onDone, null);
     }
+
     /* B1-sửa lớp nhỏ (2026-10-15) — phiếu RA-SOAT-TF-TIENG-ANH: nút nghe do
        bé CHỦ ĐỘNG bấm là một phần của dữ kiện câu hỏi, không phải âm thanh
        nền — phải đọc NGAY CẢ KHI công tắc giọng đang tắt (trước đây speak()
@@ -1657,19 +1669,14 @@
         host.appendChild(sp);
         revealed = true;
       }
-      try {
-        if (!("speechSynthesis" in window)) { reveal(); return; }
-        var voices = refreshVoices();
-        if (!voices.length) reveal();
-        var u = new SpeechSynthesisUtterance(text);
-        u.lang = "en-US"; u.rate = 0.85; u.pitch = 1.05;
-        for (var i = 0; i < voices.length; i++) {
-          if (voices[i].lang && voices[i].lang.indexOf("en") === 0) { u.voice = voices[i]; break; }
-        }
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-      } catch (e) { reveal(); }
+      /* v2: chờ voice en nạp xong (tối đa ~2 giây) rồi mới phát. Không có
+         voice en thì TUYỆT ĐỐI không phát bằng voice mặc định tiếng Việt:
+         hiện chữ của từ (reveal) + cảnh báo rõ, để bài nghe không thành
+         ngõ cụt. Trên trình duyệt Edge, speakEnInternal sẽ thử tuyến Edge
+         en-US-AriaNeural trước khi cảnh báo. */
+      speakEnInternal(text, null, null, function () { reveal(); showEnVoiceWarning(btn); });
     }
+
     function findViVoice() {
       try {
         var voices = refreshVoices();
@@ -1685,9 +1692,10 @@
              trực tuyến, thường nét nhất) và giọng hãng rõ tên; giọng local
              mặc định của máy xếp sau cùng. */
           if (v.localService === false) s += 6;
-          if (n.indexOf("google") !== -1) s += 5; /* Google tiếng Việt mặc định là giọng nữ */
+          if (n.indexOf("hoaimy") !== -1 || n.indexOf("hoai my") !== -1) s += 12; /* v2: HoaiMy trước tiên */
+          else if (n.indexOf("namminh") !== -1 || n.indexOf("nam minh") !== -1) s += 11; /* v2: NamMinh thứ hai */
           if (n.indexOf("microsoft") !== -1) s += 5;
-          if (n.indexOf("hoaimy") !== -1 || n.indexOf("hoai my") !== -1) s += 4;
+          if (n.indexOf("google") !== -1) s += 5; /* Google tiếng Việt mặc định là giọng nữ */
           if (n.indexOf("linh") !== -1) s += 4;
           if (n.indexOf("female") !== -1) s += 3;
           if (n.indexOf("nữ") !== -1 || n.indexOf("nu ") !== -1) s += 2;
@@ -1696,6 +1704,103 @@
         });
         return best || vi[0];
       } catch (e) { return null; }
+    }
+    function findViVoiceByName(name) {
+      if (!name) return null;
+      var voices = refreshVoices();
+      for (var i = 0; i < voices.length; i++) { if (voices[i].name === name) return voices[i]; }
+      return null;
+    }
+    function viVoiceForDevice() {
+      /* Chỉ trả voice tiếng Việt: voice người chơi đã chọn (nếu tên đó vẫn
+         là voice vi) hoặc findViVoice(). Không bao giờ trả voice ngôn ngữ
+         khác — không có voice vi thì trả null và tầng gọi phải cảnh báo. */
+      if (audioSettings.viVoiceName) {
+        var picked = findViVoiceByName(audioSettings.viVoiceName);
+        if (picked && picked.lang && String(picked.lang).toLowerCase().indexOf("vi") === 0) return picked;
+        if (picked) return null; /* người chơi chọn nhầm voice khác ngôn ngữ: không dùng nó cho chữ vi */
+      }
+      return findViVoice();
+    }
+    function findEnVoice() {
+      /* Chấm điểm giống findViVoice(): chỉ chấp nhận voice có lang bắt đầu
+         bằng "en" (chuẩn hóa "en_US" thành "en-US"). Ưu tiên en-US, rồi
+         Google US English, Microsoft Aria/Jenny/Zira, giọng nữ, giọng mạng. */
+      try {
+        var voices = refreshVoices();
+        var en = [];
+        for (var i = 0; i < voices.length; i++) {
+          var lg = String(voices[i].lang || "").toLowerCase().replace("_", "-");
+          if (lg.indexOf("en") === 0) en.push(voices[i]);
+        }
+        if (!en.length) return null;
+        var best = null, bestScore = -1;
+        en.forEach(function (v) {
+          var n = (v.name || "").toLowerCase(), l = String(v.lang || "").toLowerCase().replace("_", "-"), s = 0;
+          if (l === "en-us") s += 10; else if (l.indexOf("en-us") === 0) s += 9; else if (l === "en-gb") s += 4;
+          if (n.indexOf("google") !== -1 && l.indexOf("us") !== -1) s += 6; else if (n.indexOf("google") !== -1) s += 4;
+          if (n.indexOf("aria") !== -1) s += 5; if (n.indexOf("jenny") !== -1) s += 5; if (n.indexOf("zira") !== -1) s += 5;
+          if (n.indexOf("female") !== -1 || n.indexOf("woman") !== -1) s += 3;
+          if (v.localService === false) s += 4;
+          if (v.default) s -= 2;
+          if (s > bestScore) { bestScore = s; best = v; }
+        });
+        return best || en[0];
+      } catch (e) { return null; }
+    }
+    function waitForEnVoice(timeoutMs, cb) {
+      /* Chờ danh sách voice nạp xong (voiceschanged/polling) tối đa
+         timeoutMs (mặc định 2000ms), rồi gọi cb(voice|null). Không chờ
+         nếu trình duyệt không có speechSynthesis: gọi cb(null) ngay. */
+      if (!("speechSynthesis" in window)) { cb(null); return; }
+      var limit = timeoutMs || 2000, start = Date.now();
+      var tick = function () {
+        var v = findEnVoice();
+        if (v) { cb(v); return; }
+        if (Date.now() - start >= limit) { cb(null); return; }
+        setTimeout(tick, 100);
+      };
+      tick();
+    }
+    var VI_VOICE_GUIDE = "Thiết bị chưa có giọng tiếng Việt. Trên Windows: cài gói ngôn ngữ tiếng Việt để có giọng HoaiMy/NamMinh của Microsoft. Trên Android: cài giọng tiếng Việt trong cài đặt Text-to-speech của Google. Hoặc mở game bằng trình duyệt Edge để dùng giọng tiếng Việt online. Câu hỏi vẫn hiện chữ ở trên để em đọc được.";
+    var EN_VOICE_GUIDE = "Thiết bị chưa có giọng tiếng Anh, cần cài giọng Google US English trong cài đặt TTS của máy.";
+    function showViVoiceWarning() {
+      /* Hiện cảnh báo rõ trên thẻ câu hỏi (nếu đang ở màn chơi) và luôn
+         cập nhật dòng chẩn đoán trong phần thiết lập âm thanh. Gọi nhiều
+         lần cũng chỉ tạo một cảnh báo, không nhân đôi. */
+      try {
+        var card = el("q-card");
+        if (card && !el("vi-voice-warn-card")) {
+          var d = document.createElement("div");
+          d.id = "vi-voice-warn-card"; d.className = "voice-warn-box";
+          d.textContent = "⚠️ " + VI_VOICE_GUIDE;
+          card.insertBefore(d, card.firstChild);
+        }
+      } catch (e) {}
+      try { updateVoiceDiag(); } catch (e) {}
+    }
+    function hideViVoiceWarning() {
+      try { var d = el("vi-voice-warn-card"); if (d && d.parentNode) d.parentNode.removeChild(d); } catch (e) {}
+    }
+    function showEnVoiceWarning(btn) {
+      try {
+        var host = btn && btn.parentNode ? btn.parentNode : el("q-card");
+        if (!host) return;
+        if (host.querySelector && host.querySelector(".en-voice-warn")) return;
+        var sp = document.createElement("span");
+        sp.className = "en-voice-warn"; sp.textContent = " ⚠️ " + EN_VOICE_GUIDE;
+        host.appendChild(sp);
+      } catch (e) {}
+    }
+    function updateVoiceDiag() {
+      var d = el("voice-diag"); if (!d) return;
+      try {
+        var vi = viVoiceForDevice(), en = findEnVoice();
+        var viTxt = vi ? (vi.name + " (" + vi.lang + ")") : "CHƯA CÓ";
+        var enTxt = en ? (en.name + " (" + en.lang + ")") : "CHƯA CÓ";
+        var picked = audioSettings.viVoiceName ? ("Đã chọn: " + audioSettings.viVoiceName + ". ") : "";
+        d.textContent = "Chẩn đoán giọng đọc — Tiếng Việt: " + viTxt + ". " + picked + "Tiếng Anh: " + enTxt + "." + (vi ? "" : " " + VI_VOICE_GUIDE);
+      } catch (e) { d.textContent = "Chẩn đoán giọng đọc: chưa kiểm tra được."; }
     }
     /* ================= GIỌNG ĐỌC v18 — BẢN CHỐT (2026-10-18) =================
        (1) Câu CỐ ĐỊNH (khen / khích lệ / mảnh đầu các mẫu tổng kết) → tệp MP3
@@ -1774,13 +1879,20 @@
       };
       try {
         if (!("speechSynthesis" in window)) { fail("unavailable"); return; }
-        var v = findViVoice() || findFallbackVoice(); /* không có giọng tiếng Việt vẫn đọc bằng giọng mặc định tốt nhất — không im lặng */
+        /* v2 — CHẶT CHẼ THEO NGÔN NGỮ: chỉ dùng voice tiếng Việt. Không có
+           voice vi thì FAIL NGAY với "no-vi-voice" và hiện cảnh báo, TUYỆT
+           ĐỐI không gán voice tiếng Anh (hoặc voice mặc định khác ngôn ngữ)
+           vào utterance lang vi-VN. Chính sách cũ "không im lặng, cứ đọc
+           bằng giọng mặc định" là gốc của lỗi Chrome đọc chữ vi bằng giọng
+           Anh, và đã bị thay bằng "không đọc sai ngôn ngữ". */
+        var v = viVoiceForDevice();
+        if (!v) { showViVoiceWarning(); fail("no-vi-voice"); return; }
         window.speechSynthesis.cancel();
         try { window.speechSynthesis.resume(); } catch (e) {}
         var u = new SpeechSynthesisUtterance(text);
         u.lang = "vi-VN"; u.rate = 0.98; u.pitch = 1.15;
-        if (v) u.voice = v;
-        u.onstart = function () { duckMusic(true); };
+        u.voice = v;
+        u.onstart = function () { duckMusic(true); hideViVoiceWarning(); };
         u.onend = function () { fin(); };
         u.onerror = function (ev) { fail(ev && ev.error); };
         window.speechSynthesis.speak(u);
@@ -1806,7 +1918,7 @@
     function ttsSetStatus(msg) { /* bản chốt: khối tải giọng đã gỡ — không còn phần tử trạng thái */ }
     function stopAllSpeech() {
       speechGen++;
-      stopFixedAudio(); stopTtsPlayback();
+      stopFixedAudio(); stopTtsPlayback(); stopEdgeAudio();
       if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
     }
     /* ---------- Tiền xử lý cho giọng đọc (chỉ áp cho đầu vào đọc, không đổi chữ hiển thị) ----------
@@ -1990,17 +2102,282 @@
     var viDeviceBroken = false; /* trong phiên: giọng máy từng lỗi thật */
     function voiceRouteMode() {
       var m = audioSettings.voiceRoute;
-      return m === "device" ? "device" : "auto";
+      if (m === "device" || m === "prerecorded" || m === "edge") return m;
+      return "auto";
     }
     function viRoute() {
-      /* Bản chốt: mọi văn bản mở đều phát bằng giọng máy. Hàm giữ lại để
-         các điểm kiểm tra đường đi (và __ttsVi.route) còn nguyên ý nghĩa:
-         luôn trả "device". */
-      return "device";
+      /* v2: tuyến hiệu quả cho câu tiếng Việt động. "auto" trên Edge thì
+         thử Edge trước rồi máy; "auto" ngoài Edge thì chỉ máy (không chờ
+         Edge hỏng); các tuyến còn lại giữ đúng tên. Câu cố định luôn qua
+         MP3 thu sẵn trước, không qua hàm này. */
+      var m = voiceRouteMode();
+      if (m === "auto") return isEdgeBrowser() ? "edge-then-device" : "device";
+      return m;
     }
     function viRouteErrIgnorable(errName) {
       /* Lỗi do chính game ngắt câu cũ (đổi câu/dừng đọc) — không phải đường hỏng */
       return errName === "interrupted" || errName === "canceled" || errName === "cancelled";
+    }
+    /* ================= v2 — ĐỘNG CƠ GIỌNG ĐỌC PHÂN LỚP =================
+       Thứ tự rớt (fallback) cho câu hỏi tiếng Việt động:
+         1. Câu CỐ ĐỊNH → MP3 giọng nữ thu sẵn (FIXED_AUDIO, xử lý trước
+            ở speakViParts — không qua khối này).
+         2. Tuyến Edge online (chỉ khi người chơi chọn, xem dưới).
+         3. Giọng tiếng Việt trên máy (viVoiceForDevice, chặt chẽ theo
+            ngôn ngữ — không bao giờ rớt sang giọng tiếng Anh).
+         4. Không có voice cùng ngôn ngữ → cảnh báo + hiện chữ, KHÔNG
+            phát lén bằng giọng sai ngôn ngữ.
+       GIỚI HẠN CỦA TUYẾN EDGE — đọc kỹ trước khi sửa khối này:
+         Microsoft hiện yêu cầu header WebSocket tùy chỉnh mà trình duyệt
+         thường không đặt được, nên dùng trực tiếp từ trang tĩnh chỉ tin
+         cậy trên chính trình duyệt Edge; trên Chrome/Firefox/Safari nó sẽ
+         lỗi. Vì vậy tuyến Edge ở đây là "thử nhanh, lỗi thì rớt êm": chỉ
+         thử khi tuyến là "edge", hoặc khi tuyến là "auto" VÀ đang chạy
+         trên Edge; timeout mỗi câu chỉ vài giây; lỗi một lần trong phiên
+         thì các lần sau bỏ qua Edge ngay (không chờ lại) để không làm
+         chậm mọi câu hỏi. KHÔNG nhúng bất kỳ API key hay token nào vào
+         game — đó cũng là một lý do tuyến Edge chỉ là best-effort.
+       CÁC TUYẾN BỊ TỪ CHỐI RÕ RÀNG (không thêm lại):
+         - Google Translate TTS không chính thức và TikTok TTS không chính
+           thức: không có tài liệu chính thức, bị giới hạn tốc độ, có thể
+           bị chặn không báo trước, và điều khoản sử dụng không rõ ràng.
+           Chỉ nhắc tên ở đây để ghi quyết định, KHÔNG có endpoint nào
+           của chúng trong code.
+       Bộ nhớ đệm Edge chỉ giữ trong bộ nhớ (Map), KHÔNG ghi localStorage
+       để không làm phình file lưu của người chơi; tối đa 40 mục, đầy thì
+       xóa mục cũ nhất. */
+    var EDGE_WS_URL = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
+    var edgeAudioEl = null;
+    var edgeAudioCache = (typeof Map !== "undefined") ? new Map() : null;
+    var edgeBrokenSession = false;
+    function isEdgeBrowser() { try { return /Edg\//.test(navigator.userAgent || ""); } catch (e) { return false; } }
+    function stopEdgeAudio() { if (edgeAudioEl) { try { edgeAudioEl.pause(); } catch (e) {} edgeAudioEl = null; } }
+    function edgeCacheGet(key) { try { return edgeAudioCache ? edgeAudioCache.get(key) : undefined; } catch (e) { return undefined; } }
+    function edgeCacheSet(key, buf) {
+      try {
+        if (!edgeAudioCache) return;
+        if (edgeAudioCache.size >= 40) { var first = edgeAudioCache.keys().next().value; edgeAudioCache.delete(first); }
+        edgeAudioCache.set(key, buf);
+      } catch (e) {}
+    }
+    function edgeEscapeXml(s) {
+      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function edgeSplitSentences(text) {
+      var parts = String(text == null ? "" : text).match(/[^.!?…]+[.!?…]+|[^.!?…]+/g) || [];
+      var out = [], cur = "";
+      parts.forEach(function (seg) {
+        var segTrim = seg.trim(); if (!segTrim) return;
+        if (cur && (cur.length + 1 + segTrim.length) > 220) { out.push(cur); cur = segTrim; }
+        else cur = cur ? (cur + " " + segTrim) : segTrim;
+      });
+      if (cur) out.push(cur);
+      /* Đoạn không có dấu câu vẫn có thể dài hơn 220 ký tự (ví dụ một câu
+         hỏi dài không dấu chấm) — chẻ tiếp theo từ, để không có mảnh nào
+         quá dài khiến một lần tổng hợp hỏng cả câu hỏi. */
+      var finalOut = [];
+      out.forEach(function (chunk) {
+        if (chunk.length <= 220) { finalOut.push(chunk); return; }
+        var words = chunk.split(/\s+/), piece = "";
+        words.forEach(function (w) {
+          if (piece && (piece.length + 1 + w.length) > 220) { finalOut.push(piece); piece = w; }
+          else piece = piece ? (piece + " " + w) : w;
+        });
+        if (piece) finalOut.push(piece);
+      });
+      return finalOut;
+    }
+    function edgeConcatBuffers(list) {
+      var total = 0; list.forEach(function (b) { total += b.byteLength; });
+      var out = new Uint8Array(total), off = 0;
+      list.forEach(function (b) { out.set(new Uint8Array(b), off); off += b.byteLength; });
+      return out.buffer;
+    }
+    function edgeSynthesizeOne(text, voiceName, lang, timeoutMs) {
+      return new Promise(function (resolve) {
+        if (typeof WebSocket === "undefined") { resolve(null); return; }
+        var done = false, ws = null, chunks = [];
+        var timer = setTimeout(function () { finish(null); }, timeoutMs || 4000);
+        function finish(buf) {
+          if (done) return; done = true; clearTimeout(timer);
+          try { if (ws) ws.close(); } catch (e) {}
+          resolve(buf);
+        }
+        try {
+          ws = new WebSocket(EDGE_WS_URL);
+          ws.binaryType = "arraybuffer";
+          ws.onopen = function () {
+            try {
+              var reqId = "";
+              for (var i = 0; i < 32; i++) reqId += "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+              var config = "Path: speech.config\r\nContent-Type: application/json; charset=utf-8\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"true\"},\"outputFormat\":\"audio-24khz-48kbitrate-mono-mp3\"}}}}\r\n";
+              var ssml = "X-RequestId: " + reqId + "\r\nContent-Type: application/ssml+xml\r\nPath: ssml\r\n\r\n<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"" + lang + "\"><voice name=\"" + voiceName + "\">" + edgeEscapeXml(text) + "</voice></speak>";
+              ws.send(config); ws.send(ssml);
+            } catch (e) { finish(null); }
+          };
+          ws.onmessage = function (ev) {
+            try {
+              if (typeof ev.data === "string") {
+                if (ev.data.indexOf("Path: turn.end") !== -1) finish(chunks.length ? edgeConcatBuffers(chunks) : null);
+                else if (ev.data.indexOf("Path: turn.error") !== -1) finish(null);
+                return;
+              }
+              var buf = ev.data, bytes = new Uint8Array(buf), headerEnd = -1;
+              for (var i = 0; i + 3 < bytes.length; i++) {
+                if (bytes[i] === 13 && bytes[i + 1] === 10 && bytes[i + 2] === 13 && bytes[i + 3] === 10) { headerEnd = i + 4; break; }
+              }
+              chunks.push(headerEnd > 0 ? buf.slice(headerEnd) : buf);
+            } catch (e) { finish(null); }
+          };
+          ws.onerror = function () { finish(null); };
+          ws.onclose = function () { if (!done) finish(chunks.length ? edgeConcatBuffers(chunks) : null); };
+        } catch (e) { finish(null); }
+      });
+    }
+    function playEdgeBuffer(buf, gen, done) {
+      var finished = false;
+      var fin = function (ok) { if (finished) return; finished = true; if (done) done(ok); };
+      try {
+        var blob = new Blob([buf], { type: "audio/mpeg" });
+        var url = URL.createObjectURL(blob);
+        var a = new Audio(url); edgeAudioEl = a;
+        a.onended = function () { try { URL.revokeObjectURL(url); } catch (e) {} if (edgeAudioEl === a) edgeAudioEl = null; duckMusic(false); fin(true); };
+        a.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} if (edgeAudioEl === a) edgeAudioEl = null; duckMusic(false); fin(false); };
+        duckMusic(true);
+        var p = a.play();
+        if (p && p.catch) p.catch(function () { fin(false); });
+      } catch (e) { fin(false); }
+    }
+    function speakEdgeText(text, voiceName, lang, fallbackVoiceName, done, gen) {
+      /* Phát một đoạn văn bằng tuyến Edge, chia câu ngắn, dùng cache trong
+         bộ nhớ. Trả done(true) nếu phát được, done(false) nếu lỗi (tầng gọi
+         sẽ rớt về tuyến sau). Lỗi một lần trong phiên thì các lần sau trả
+         false ngay, trừ khi câu đã có trong cache. */
+      var sentences = edgeSplitSentences(text);
+      if (!sentences.length) { done(false); return; }
+      var idx = 0;
+      var next = function () {
+        if (gen != null && gen !== speechGen) { done(false); return; }
+        if (idx >= sentences.length) { done(true); return; }
+        var sentence = sentences[idx++];
+        var cacheKey = voiceName + "|" + lang + "|" + sentence;
+        var cached = edgeCacheGet(cacheKey);
+        if (cached) { playEdgeBuffer(cached, gen, function (ok) { if (ok) next(); else done(false); }); return; }
+        if (edgeBrokenSession) { done(false); return; }
+        var timeoutMs = isEdgeBrowser() ? 4000 : 2000;
+        edgeSynthesizeOne(sentence, voiceName, lang, timeoutMs).then(function (buf) {
+          if (!buf && fallbackVoiceName) {
+            edgeSynthesizeOne(sentence, fallbackVoiceName, lang, timeoutMs).then(function (buf2) {
+              if (!buf2) { edgeBrokenSession = true; done(false); return; }
+              edgeCacheSet(cacheKey, buf2);
+              playEdgeBuffer(buf2, gen, function (ok) { if (ok) next(); else done(false); });
+            });
+            return;
+          }
+          if (!buf) { edgeBrokenSession = true; done(false); return; }
+          edgeCacheSet(cacheKey, buf);
+          playEdgeBuffer(buf, gen, function (ok) { if (ok) next(); else done(false); });
+        });
+      };
+      next();
+    }
+    function speakViEdge(text, done, gen) {
+      /* Giọng nữ mặc định cho game: vi-VN-HoaiMyNeural, rớt về
+         vi-VN-NamMinhNeural nếu HoaiMy lỗi. Text đã qua tiền xử lý ở
+         speakViDevice không áp dụng ở đây, nên tiền xử lý lại tại chỗ. */
+      speakEdgeText(ttsPreprocess(text), "vi-VN-HoaiMyNeural", "vi-VN", "vi-VN-NamMinhNeural", done, gen);
+    }
+    function speakEnEdge(text, done, gen) {
+      /* Đường dự phòng tiếng Anh khi máy không có voice en, chỉ tin cậy
+         trên trình duyệt Edge như tuyến vi; trên trình duyệt khác sẽ lỗi
+         nhanh và tầng gọi sẽ cảnh báo + hiện chữ. */
+      speakEdgeText(text, "en-US-AriaNeural", "en-US", null, done, gen);
+    }
+    function speakEnInternal(text, gen, onDone, onNoVoice) {
+      /* Đọc chữ tiếng Anh, CHỈ bằng voice tiếng Anh. Không bao giờ để
+         u.voice trống để trình duyệt rớt về voice mặc định tiếng Việt,
+         và không bao giờ dùng giọng vi cho chữ en. Không có voice en thì
+         thử tuyến Edge en (chỉ tin cậy trên Edge), rồi gọi onNoVoice
+         (cảnh báo + hiện chữ ở tầng gọi) thay vì phát lén bằng giọng Việt. */
+      if (!text) { if (onDone) onDone(); return; }
+      waitForEnVoice(2000, function (voice) {
+        if (gen != null && gen !== speechGen) { if (onDone) onDone(); return; }
+        if (voice) {
+          try {
+            if (!("speechSynthesis" in window)) { if (onNoVoice) onNoVoice(); if (onDone) onDone(); return; }
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            var lg = String(voice.lang || "en-US").replace("_", "-");
+            u.lang = lg.indexOf("en") === 0 ? lg : "en-US";
+            u.voice = voice; u.rate = 0.85; u.pitch = 1.05;
+            var finished = false;
+            var fin = function () { if (finished) return; finished = true; duckMusic(false); if (onDone) onDone(); };
+            u.onstart = function () { duckMusic(true); };
+            u.onend = function () { fin(); };
+            u.onerror = function () { fin(); };
+            window.speechSynthesis.speak(u);
+            setTimeout(fin, Math.min(12000, 2500 + String(text).length * 95));
+          } catch (e) { if (onNoVoice) onNoVoice(); if (onDone) onDone(); }
+          return;
+        }
+        if (isEdgeBrowser()) {
+          speakEnEdge(text, function (ok) {
+            if (ok) { if (onDone) onDone(); }
+            else { if (onNoVoice) onNoVoice(); if (onDone) onDone(); }
+          }, gen);
+          return;
+        }
+        if (onNoVoice) onNoVoice();
+        if (onDone) onDone();
+      });
+    }
+    function voiceFallbackChain(mode) {
+      /* Thứ tự thử cho câu tiếng Việt động. Câu cố định đã thử MP3 trước
+         ở speakViParts, nên "prerecorded" ở đây chỉ còn tuyến máy cho câu
+         động (để game không im lặng) — nhãn UI đã nói rõ điều này. */
+      if (mode === "edge") return ["edge", "device"];
+      if (mode === "prerecorded") return ["device"];
+      if (mode === "device") return ["device"];
+      return isEdgeBrowser() ? ["edge", "device"] : ["device"];
+    }
+    function splitPromptViEn(stem) {
+      /* Tách prompt môn Tiếng Anh thành đoạn vi/en: phần trong dấu ngoặc
+         kép (“ ”, " ", ' ') là từ tiếng Anh, phần ngoài là hướng dẫn tiếng
+         Việt. Không có ngoặc kép: nếu có dấu tiếng Việt thì toàn bộ là
+         hướng dẫn tiếng Việt (đọc bằng giọng vi); nếu không có dấu tiếng
+         Việt thì toàn bộ là tiếng Anh (đọc bằng giọng en). */
+      var s = String(stem == null ? "" : stem);
+      var segs = [], re = /[“"]([^“”"]+)[”"]|'([^']+)'/g, last = 0, m;
+      while ((m = re.exec(s)) !== null) {
+        if (m.index > last) segs.push({ lang: "vi", text: s.slice(last, m.index) });
+        segs.push({ lang: "en", text: m[1] != null ? m[1] : m[2] });
+        last = m.index + m[0].length;
+      }
+      if (segs.length) {
+        if (last < s.length) segs.push({ lang: "vi", text: s.slice(last) });
+        return segs.filter(function (x) { return x.text.trim().length > 0; });
+      }
+      if (/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(s)) return [{ lang: "vi", text: s }];
+      return [{ lang: "en", text: s }];
+    }
+    function speakMixedPrompt(stem, done) {
+      /* Đọc prompt môn Tiếng Anh đã tách ngôn ngữ, nối tiếp nhau. Đoạn vi
+         qua định tuyến vi (Edge/máy/cảnh báo), đoạn en qua voice en
+         (không có voice en thì cảnh báo trên thẻ câu hỏi rồi đi tiếp). */
+      var segs = splitPromptViEn(stem);
+      if (!segs.length) { if (done) done(); return; }
+      var gen = speechGen, i = 0;
+      var next = function () {
+        if (gen !== speechGen || i >= segs.length) { if (done) done(); return; }
+        var seg = segs[i++];
+        if (!seg.text.trim()) { next(); return; }
+        if (seg.lang === "en") {
+          speakEnInternal(seg.text, gen, function () { next(); }, function () { showEnVoiceWarning(el("q-speak-btn")); });
+        } else {
+          speakDynamic(seg.text, function () { next(); }, gen);
+        }
+      };
+      next();
     }
     /* ---------- Phễu đọc chính (giữ nguyên tên/cách gọi cũ) ---------- */
     function speakViParts(parts) {
@@ -2023,14 +2400,31 @@
       next();
     }
     function speakDynamic(text, done, gen) {
-      /* Câu động — BẢN CHỐT: chỉ còn đường giọng máy (giọng đóng gói đã gỡ).
-         Lỗi thật (không phải bị ngắt) ở chế độ Tự động → ghi nhớ trong phiên
-         (viDeviceBroken) rồi kết thúc câu đó êm thấm; các lần đọc sau vẫn
-         dùng giọng máy (findViVoice chọn lại giọng tốt nhất hiện có). */
-      speakViDevice(text, function () { if (done) done(); }, function (errName) {
-        if (gen === speechGen && !viRouteErrIgnorable(errName) && voiceRouteMode() === "auto") viDeviceBroken = true;
-        if (done) done();
-      });
+      /* v2: câu động đi theo chuỗi tuyến của voiceFallbackChain. Edge lỗi
+         thì rớt êm sang máy; máy không có voice vi thì speakViDevice đã
+         hiện cảnh báo + fail("no-vi-voice"), và chuỗi kết thúc ở đó (không
+         có tuyến nào sau máy để rớt tiếp, và không phát bằng giọng Anh).
+         Lỗi thật ở chế độ Tự động vẫn ghi nhớ phiên (viDeviceBroken) như cũ. */
+      var chain = voiceFallbackChain(voiceRouteMode());
+      var i = 0;
+      var tryNext = function () {
+        if (gen != null && gen !== speechGen) { if (done) done(); return; }
+        if (i >= chain.length) { if (done) done(); return; }
+        var route = chain[i++];
+        if (route === "edge") {
+          speakViEdge(text, function (ok) {
+            if (ok) { if (done) done(); }
+            else if (gen === speechGen && !viDeviceBroken) tryNext();
+            else if (done) done();
+          }, gen);
+        } else {
+          speakViDevice(text, function () { if (done) done(); }, function (errName) {
+            if (gen === speechGen && !viRouteErrIgnorable(errName) && voiceRouteMode() === "auto") viDeviceBroken = true;
+            if (done) done();
+          });
+        }
+      };
+      tryNext();
     }
     function speakVi(text) {
       if (!audioSettings.voice || !text) return;
@@ -2052,13 +2446,12 @@
       var i = 0;
       var step = function () {
         if (gen !== speechGen || i >= texts.length) { restoreBtn(); return; }
-        if (!findViVoice() && !findFallbackVoice()) { restoreBtn(); return; } /* máy không có giọng nào → bỏ qua êm */
         var t = texts[i];
-        speakViDevice(t, function () { i++; step(); }, function (errName) {
-          if (gen !== speechGen) return;
-          if (!viRouteErrIgnorable(errName) && voiceRouteMode() === "auto") viDeviceBroken = true;
-          i++; step();
-        });
+        /* Cố tình KHÔNG thử FIXED_AUDIO ở đây: OnDemand đọc câu hỏi và câu
+           mẫu "Nghe thử" bằng đúng tuyến giọng người chơi đã chọn, để nút
+           Nghe thử thật sự cho nghe giọng đã chọn. Câu cố định trong luồng
+           tự động (speakViParts) vẫn qua MP3 thu sẵn như trước. */
+        speakDynamic(t, function () { i++; step(); }, gen);
       };
       step();
     }
@@ -2075,9 +2468,9 @@
          để mọi mã cũ còn gọi nó rơi về giọng máy, không treo chờ. */
       ensure: function (cb) { if (cb) cb(false); },
       status: function () { return ttsState; },
-      route: function () { return { mode: voiceRouteMode(), effective: viRoute(), broken: viDeviceBroken }; },
+      route: function () { return { mode: voiceRouteMode(), effective: viRoute(), broken: viDeviceBroken, edgeAvailable: isEdgeBrowser(), selectedVoice: audioSettings.viVoiceName || null, hasViVoice: !!viVoiceForDevice(), hasEnVoice: !!findEnVoice() }; },
       setRoute: function (m) {
-        if (m === "auto" || m === "device") {
+        if (m === "auto" || m === "device" || m === "prerecorded" || m === "edge") {
           audioSettings.voiceRoute = m; saveAudioSettings();
           var s = el("voice-route-sel"); if (s) s.value = m;
         }
@@ -2098,6 +2491,8 @@
       st.textContent =
         ".q-speak-btn{display:inline-block;margin:2px 0 8px;font-family:inherit;font-size:16px;font-weight:800;padding:9px 16px;border-radius:14px;border:3px solid var(--line,#f0dfba);background:#fffdf6;color:#33302a;cursor:pointer}" +
         ".q-speak-btn:disabled{opacity:.55;cursor:wait}" +
+        ".voice-warn-box{background:#fff3cd;border:2px solid #e6c200;border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:15px;line-height:1.5;color:#5a4a00}" +
+        ".en-voice-warn{color:#b00020;font-weight:700}" +
         ".as-speak-btn,.k-speak-btn{font-family:inherit;font-size:14px;font-weight:800;padding:7px 12px;border-radius:11px;border:2px solid var(--line,#f0dfba);background:#fffdf6;color:#33302a;cursor:pointer;margin-top:8px}" +
         ".as-speak-btn:disabled,.k-speak-btn:disabled{opacity:.55;cursor:wait}";
       document.head.appendChild(st);
@@ -2124,12 +2519,12 @@
       speakVi(pick(ENCOURAGES));
     }
     if ("speechSynthesis" in window) {
-      var onVoicesChanged = function () { refreshVoices(); updateVoiceWarn(); };
+      var onVoicesChanged = function () { refreshVoices(); updateVoiceWarn(); syncVoiceNameSel(); };
       try { window.speechSynthesis.addEventListener("voiceschanged", onVoicesChanged); } catch (e) {}
       try { window.speechSynthesis.onvoiceschanged = onVoicesChanged; } catch (e) {}
       refreshVoices(); updateVoiceWarn();
       [300, 800, 1500, 3000].forEach(function (ms) {
-        setTimeout(function () { refreshVoices(); if (ms === 3000) voiceListReady = true; updateVoiceWarn(); }, ms);
+        setTimeout(function () { refreshVoices(); if (ms === 3000) voiceListReady = true; updateVoiceWarn(); syncVoiceNameSel(); }, ms);
       });
     } else {
       updateVoiceWarn();
@@ -2147,8 +2542,34 @@
       voiceRouteSel.addEventListener("change", function () {
         audioSettings.voiceRoute = voiceRouteSel.value;
         saveAudioSettings();
+        try { updateVoiceDiag(); } catch (e) {}
       });
     }
+    function syncVoiceNameSel() {
+      var sel = el("voice-name-sel"); if (!sel) return;
+      var voices = refreshVoices();
+      var vi = voices.filter(function (v) { return v.lang && String(v.lang).toLowerCase().indexOf("vi") === 0; });
+      var keep = audioSettings.viVoiceName || "";
+      var html = "<option value=\"\">Tự động chọn giọng tốt nhất</option>";
+      vi.forEach(function (v) {
+        var label = v.name + " (" + v.lang + ")";
+        html += "<option value=\"" + String(v.name).replace(/"/g, "&quot;") + "\">" + label.replace(/</g, "&lt;") + "</option>";
+      });
+      /* Giá trị option lưu theo tên voice; khi người chơi đã chọn một giọng
+         chưa nạp xong, vẫn giữ lựa chọn đó trong danh sách để không mất. */
+      if (keep && !vi.some(function (v) { return v.name === keep; })) html += "<option value=\"" + keep.replace(/"/g, "&quot;") + "\">" + keep.replace(/</g, "&lt;") + " (chưa nạp)</option>";
+      sel.innerHTML = html;
+      sel.value = keep;
+      if (!sel.dataset.v2bound) {
+        sel.dataset.v2bound = "1";
+        sel.addEventListener("change", function () {
+          audioSettings.viVoiceName = sel.value;
+          saveAudioSettings();
+          try { updateVoiceDiag(); updateVoiceWarn(); } catch (e) {}
+        });
+      }
+    }
+    syncVoiceNameSel();
     /* ---------- Nút 🔊 Nghe câu hỏi trên thẻ #q-card (v18) ----------
        Chỉ các vòng LUYỆN TẬP dùng thẻ này (luyện SGK, Ôn câu sai, Thử
        thách mỗi ngày, Chuyên đề, Góc giải trí). Kiểm tra đang làm bài và
@@ -2158,8 +2579,8 @@
        phần tử #q-prompt — KHÔNG đọc phần hình (#q-visual chứa dữ kiện/ô
        đáp án/emoji đếm), KHÔNG đọc các lựa chọn, KHÔNG đọc đáp án bị giấu
        trong chỗ trống (chỗ trống được đọc thành "chỗ trống"). Câu của môn
-       Tiếng Anh: giữ NGUYÊN cơ chế cũ (giọng Anh của máy đọc như trước,
-       không qua đường mới này). */
+       Tiếng Anh (v2): tách ngôn ngữ — hướng dẫn tiếng Việt bằng giọng vi,
+       từ tiếng Anh trong ngoặc kép bằng giọng en, vẫn prompt-only. */
     var qSpeakActive = false, qSpeakTimer = null, qSpeakWatch = null;
     function qSpeakReset() {
       qSpeakActive = false;
@@ -2178,24 +2599,22 @@
                     (typeof currentTopicKey !== "undefined" && /-eng\||\|cd-en-/.test(String(currentTopicKey))));
       } catch (e) {}
       var looksEnglish = stem && !/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(stem) && /[A-Za-z]{3,}/.test(stem);
-      if (isEngQ || looksEnglish) {
-        /* Đường tiếng Anh GIỮ NGUYÊN như trước đợt sửa: prompt + phần chữ
-           hiện trên thẻ, đọc bằng giọng Anh của máy (đúng hành vi cũ). */
-        var eparts = [];
-        var pe2 = el("q-prompt"); var ptxt2 = pe2 ? pe2.textContent.replace(/\s+/g, " ").trim() : "";
-        if (ptxt2) eparts.push(ptxt2);
-        var vis2 = el("q-visual"); var vtxt2 = vis2 ? vis2.textContent.replace(/\s+/g, " ").trim() : "";
-        if (vtxt2 && vtxt2 !== ptxt2) eparts.push(vtxt2);
-        if (eparts.length) speak(eparts.join(" "));
-        return;
-      }
       if (!stem) return;
-      var parts = [stem];
       qSpeakActive = true;
       qSpeakBtn.textContent = "⏹ Dừng đọc";
-      var totalChars = parts.join(" ").length;
-      qSpeakTimer = setTimeout(qSpeakReset, Math.min(120000, 6000 + totalChars * 130));
-      speakViOnDemand(parts, null);
+      qSpeakTimer = setTimeout(qSpeakReset, Math.min(120000, 6000 + stem.length * 130));
+      if (isEngQ || looksEnglish) {
+        /* v2 — tách ngôn ngữ, prompt-only: hướng dẫn tiếng Việt đọc bằng
+           giọng vi, từ tiếng Anh trong ngoặc kép đọc bằng giọng en, nối
+           tiếp nhau. KHÔNG đọc visual (có thể chứa đáp án), KHÔNG đọc lựa
+           chọn/đáp án/giải thích. Không có từ trong ngoặc kép thì toàn bộ
+           là hướng dẫn tiếng Việt (đọc bằng giọng vi). Không có voice en
+           thì cảnh báo trên thẻ câu hỏi rồi đi tiếp, không phát bằng giọng
+           Việt một cách lén lút. */
+        speakMixedPrompt(stem, qSpeakReset);
+        return;
+      }
+      speakViOnDemand([stem], null);
     });
     syncSoundUI();
 
@@ -2542,6 +2961,8 @@ function valueKeyOf(html) {
       if (star) { game.stars++; el("stars-now").textContent = game.stars; }
       /* V2 Phase 1: chuoi dung lien tiep trong luot — moi 3 cau dung lien tiep +5 XP (cong o saveRoundResult). */
       if (star) { game.correctStreak = (game.correctStreak || 0) + 1; if (game.correctStreak % 3 === 0) game.xpBonus = (game.xpBonus || 0) + 5; } else { game.correctStreak = 0; }
+      /* V2 Phase 2: ghi đáp án vào kĩ năng + hàng chờ ôn (không đổi luật sao). */
+      try { if (window.__v2p2 && game && game.current) window.__v2p2.recordAnswer(game.current, star, { profile: (typeof profile !== "undefined" ? profile : null), topicKey: (typeof currentTopicKey !== "undefined" ? currentTopicKey : null) }); } catch (e) {}
       soundGood();
       var fb = el("q-feedback");
       fb.className = "feedback show good";
@@ -14157,5 +14578,6 @@ window.__ensureGrade = function (g, cb) {
 })();
 
 </script>
+<script src="assets/data/v2-phase2.js"></script>
 </body>
 </html>
