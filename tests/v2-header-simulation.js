@@ -6,7 +6,9 @@
 //  (2) index.html still contains every old header control and stat
 //      (gender select, tone toggle, logout, streak, sound, settings,
 //      stars, XP, coins, badges) after the redesign, with the rarely
-//      used controls moved inside the 👤 menu panel.
+//      used controls moved inside the 👤 menu panel, and the stars /
+//      coins / badges chips moved into the top-right currency row
+//      (before the streak chip), no longer under the XP bar.
 // Run: node tests/v2-header-simulation.js
 "use strict";
 var fs = require("fs"), path = require("path");
@@ -54,6 +56,12 @@ has(html, "v2-hd-lvl", "level circular badge exists");
 has(html, "v2-hd-xpbar", "thick XP bar exists");
 has(html, "v2-hd-chip", "stat chips exist");
 has(html, "/16 huy hiệu", "badges chip shows earned out of total");
+has(html, 'id="v2-hd-currency"', "currency row exists in the top-right cluster");
+eq(html.indexOf('id="v2-hd-currency"') < html.indexOf('id="v2-header-streak"'), true, "currency row comes before the streak chip in the top-right cluster");
+eq(html.indexOf('id="v2-hd-currency"') < html.indexOf('id="v2-header-sound"'), true, "currency row comes before the sound button in the top-right cluster");
+eq(html.indexOf('<div class="v2-hd-chips">') === -1, true, "chips row under the XP bar is gone");
+has(html, ".v2-hd-currency", "currency row is styled");
+eq(html.indexOf("v2-hd-currency { flex-basis: 100%") !== -1, true, "currency row takes its own wrapped row on narrow phones");
 has(html, "Hộp ", "next milestone unlock line exists");
 eq(html.indexOf('<label class="v2-xp" for="v2-gender-sel">Giới tính:</label>') === -1, true, "old full-width gender row is gone");
 has(shell, "v2-header-menu", "ui shell toggles the header menu");

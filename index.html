@@ -456,8 +456,11 @@
       .v2-hd-xpbar { height: 18px; background: #f5ecd7; border: 3px solid var(--line); border-radius: 999px; overflow: hidden; margin: 4px 0; }
       .v2-hd-xpfill { height: 100%; background: linear-gradient(90deg, #ffb703, #ff6b4a); border-radius: 999px; }
       .v2-hd-next { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
-      .v2-hd-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
       .v2-hd-chip { background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 14px; font-weight: 800; white-space: nowrap; }
+      /* Sao/xu/huy hiệu lên góc trên bên phải: hàng tiền tệ nằm trong
+         cụm icon phải của header, trước chip chuỗi ngày và các nút. */
+      .v2-header-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
+      .v2-hd-currency { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: flex-end; min-width: 0; }
       .v2-hd-menu { flex-basis: 100%; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff8e1; border: 3px solid var(--line); border-radius: 16px; padding: 10px 12px; }
       .v2-hd-menu[hidden] { display: none; }
       .v2-hd-menu .v2-hd-menu-label { font-size: 15px; font-weight: 800; }
@@ -465,6 +468,8 @@
         #v2-header { flex-wrap: wrap; }
         #v2-header #profile-bar { flex-basis: 100%; }
         #v2-header .v2-header-actions { margin-left: auto; }
+        .v2-hd-currency { flex-basis: 100%; justify-content: flex-end; }
+        .v2-hd-currency .v2-hd-chip { font-size: 13px; padding: 3px 8px; }
         .v2-hd-doll svg { width: 64px; }
         .v2-hd-lvl { width: 44px; height: 44px; font-size: 18px; }
         .profile-bar.v2-hd { gap: 8px; }
@@ -504,6 +509,7 @@
     <header id="v2-header">
       <div id="profile-bar"></div>
       <div class="v2-header-actions">
+        <div id="v2-hd-currency" class="v2-hd-currency" aria-label="Sao, xu và huy hiệu"></div>
         <span id="v2-header-streak" class="v2-header-streak">🔥 0</span>
         <button id="v2-header-sound" type="button" aria-label="Âm thanh" title="Âm thanh">🔊</button>
         <button id="v2-header-settings" type="button" aria-label="Cài đặt" title="Cài đặt giọng">⚙️</button>
@@ -6339,7 +6345,7 @@ window.__ensureGrade = function (g, cb) {
     window.saveRoundResult = saveRoundResult;
     function renderProfileBar(){
       var bar = el("profile-bar"); if (!bar) return;
-      if (!profile) { bar.innerHTML = ""; return; }
+      if (!profile) { bar.innerHTML = ""; var cur0 = el("v2-hd-currency"); if (cur0) cur0.innerHTML = ""; return; }
       profile = v2MigrateProfile(profile);
       var prog = v2XpProgress(profile.xp || 0);
       var __toneMod = { light: "🏻", medium: "🏽", dark: "🏿" }[profile.skinTone] || "🏽";
@@ -6351,8 +6357,9 @@ window.__ensureGrade = function (g, cb) {
       var genderOpts = '<option value="male"'+(profile.gender==="male"?' selected':'')+'>👦 Nam</option><option value="female"'+(profile.gender==="female"?' selected':'')+'>👧 Nữ</option>';
       /* Header thiết kế lại (theo ảnh chụp của Danh): búp bê SVG thật
          của tủ đồ (đang mặc gì, thú cưng nào) thay cho emoji rời rạc;
-         cấp + thanh XP dày có số; sao/xu/huy hiệu thành chip; còn
-         giới tính/giọng/đổi người chơi vào menu 👤 ở cụm icon phải.
+         cấp + thanh XP dày có số; sao/xu/huy hiệu thành chip lên góc
+         trên bên phải (hàng tiền tệ trong cụm icon phải, trước chip
+         chuỗi ngày); còn giới tính/giọng/đổi người chơi vào menu 👤.
          Giữ nguyên id v2-gender-sel, btn-tone-toggle, btn-logout và
          listener bên dưới, nên mọi nút vẫn hoạt động như cũ. */
       var dollMini = "";
@@ -6374,7 +6381,12 @@ window.__ensureGrade = function (g, cb) {
          nếu danh sách đó đổi thì cập nhật số này cho khớp. */
       var badgeEarned = 0;
       try { var bd = JSON.parse(localStorage.getItem("gameHocTap_badges_v1") || "{}"); if (bd && bd.earned) badgeEarned = Object.keys(bd.earned).length; } catch (e) {}
-      bar.innerHTML = '<div class="profile-bar v2-hd">' + dollCell + '<div class="v2-hd-main"><div class="who"><div class="nm">' + profile.name + '</div><div class="v2-hd-badges"><span class="v2-hd-badge grade">Lớp ' + profile.grade + '</span>' + (profile.lop ? '<span class="v2-hd-badge">Lớp học ' + profile.lop + '</span>' : '') + '<span class="v2-hd-badge teen">' + toneLabel + '</span></div></div><div class="v2-hd-level"><span class="v2-hd-lvl">' + prog.level + '</span><div class="v2-hd-xpwrap"><div class="v2-hd-xpnum">✨ ' + (profile.xp || 0) + ' / ' + prog.next + ' XP · còn ' + xpLeft + ' XP nữa lên cấp ' + (prog.level + 1) + '</div><div class="v2-hd-xpbar"><div class="v2-hd-xpfill" style="width:' + prog.pct + '%"></div></div>' + (nextLine ? '<div class="v2-hd-next">' + nextLine + '</div>' : '') + '</div></div><div class="v2-hd-chips"><span class="v2-hd-chip">⭐ ' + (profile.totalStars || 0) + ' sao</span><span class="v2-hd-chip">🪙 ' + (profile.coins || 0) + ' xu</span><span class="v2-hd-chip">🏅 ' + badgeEarned + '/16 huy hiệu</span></div></div><div class="v2-hd-menu" id="v2-hd-menu" hidden><span class="v2-hd-menu-label">Giới tính nhân vật:</span><select class="char-sel" id="v2-gender-sel" aria-label="Chọn giới tính nhân vật">' + genderOpts + '</select><button class="small-btn" id="btn-tone-toggle">' + (profile.tone === "teen" ? "🧒 Giọng nhỏ" : "🎓 Giọng teen") + '</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div></div>';
+      bar.innerHTML = '<div class="profile-bar v2-hd">' + dollCell + '<div class="v2-hd-main"><div class="who"><div class="nm">' + profile.name + '</div><div class="v2-hd-badges"><span class="v2-hd-badge grade">Lớp ' + profile.grade + '</span>' + (profile.lop ? '<span class="v2-hd-badge">Lớp học ' + profile.lop + '</span>' : '') + '<span class="v2-hd-badge teen">' + toneLabel + '</span></div></div><div class="v2-hd-level"><span class="v2-hd-lvl">' + prog.level + '</span><div class="v2-hd-xpwrap"><div class="v2-hd-xpnum">✨ ' + (profile.xp || 0) + ' / ' + prog.next + ' XP · còn ' + xpLeft + ' XP nữa lên cấp ' + (prog.level + 1) + '</div><div class="v2-hd-xpbar"><div class="v2-hd-xpfill" style="width:' + prog.pct + '%"></div></div>' + (nextLine ? '<div class="v2-hd-next">' + nextLine + '</div>' : '') + '</div></div></div><div class="v2-hd-menu" id="v2-hd-menu" hidden><span class="v2-hd-menu-label">Giới tính nhân vật:</span><select class="char-sel" id="v2-gender-sel" aria-label="Chọn giới tính nhân vật">' + genderOpts + '</select><button class="small-btn" id="btn-tone-toggle">' + (profile.tone === "teen" ? "🧒 Giọng nhỏ" : "🎓 Giọng teen") + '</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div></div>';
+      /* Sao/xu/huy hiệu lên góc trên bên phải: vẽ vào hàng tiền tệ
+         trong cụm icon phải của header (trước chip chuỗi ngày, nút
+         loa, cài đặt, hồ sơ), không còn nằm dưới thanh XP nữa. */
+      var cur = el("v2-hd-currency");
+      if (cur) cur.innerHTML = '<span class="v2-hd-chip">⭐ ' + (profile.totalStars || 0) + ' sao</span><span class="v2-hd-chip">🪙 ' + (profile.coins || 0) + ' xu</span><span class="v2-hd-chip">🏅 ' + badgeEarned + '/16 huy hiệu</span>';
       var sel = el("v2-gender-sel");
       if (sel) sel.addEventListener("change", function(){ if (sel.value==="male"||sel.value==="female") { if (window.__v2wardrobe && window.__v2wardrobe.setGender) window.__v2wardrobe.setGender(profile, sel.value); else { profile.gender = sel.value; saveProfile(); } renderProfileBar(); } });
       var tg = el("btn-tone-toggle");
