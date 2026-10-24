@@ -327,6 +327,13 @@
       .profile-bar .who .nm { font-size: 21px; font-weight: 800; line-height: 1.15; }
       .profile-bar .who .cl { font-size: 15px; font-weight: 600; color: var(--ink-soft); }
       .profile-bar .total { font-size: 20px; font-weight: 800; color: var(--sun-dark); }
+      /* V2 Phase 1: thanh XP / chon nhan vat trong thanh ho so (chi hien thi, khong doi logic choi). */
+      .profile-bar .v2-xp { font-size: 16px; font-weight: 800; }
+      .xp-bar { flex-basis: 100%; height: 14px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 3px solid var(--line); }
+      .xp-fill { height: 100%; background: var(--leaf); border-radius: 999px; }
+      .char-chip { min-width: 58px; padding: 12px 10px; border-radius: 16px; border: 3px solid var(--line); background: var(--card); font-size: 20px; font-weight: 800; box-shadow: 0 4px 0 var(--line); }
+      .char-chip.sel { background: var(--sun); border-color: var(--sun-dark); box-shadow: 0 4px 0 var(--sun-dark); }
+      .char-sel { border-radius: 12px; padding: 8px 10px; font-size: 18px; font-weight: 800; background: var(--bg); border: 3px solid var(--line); }
       .small-btn { border-radius: 14px; padding: 10px 14px; font-size: 15px; font-weight: 800; background: var(--bg); border: 3px solid var(--line); }
       .grade-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 16px; }
       .subj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
@@ -401,6 +408,8 @@
           <input class="text-input" id="login-name" type="text" maxlength="30" placeholder="Ví dụ: Minh Anh" autocomplete="off" />
           <span class="field-label">Em học lớp mấy?</span>
           <div class="grade-pick" id="login-grades"><button type="button" class="grade-chip sel" data-grade="1">Lớp 1</button><button type="button" class="grade-chip" data-grade="2">Lớp 2</button><button type="button" class="grade-chip" data-grade="3">Lớp 3</button><button type="button" class="grade-chip" data-grade="4">Lớp 4</button><button type="button" class="grade-chip" data-grade="5">Lớp 5</button><button type="button" class="grade-chip" data-grade="6">Lớp 6</button><button type="button" class="grade-chip" data-grade="7">Lớp 7</button><button type="button" class="grade-chip" data-grade="8">Lớp 8</button><button type="button" class="grade-chip" data-grade="9">Lớp 9</button><button type="button" class="grade-chip" data-grade="10">Lớp 10</button><button type="button" class="grade-chip" data-grade="11">Lớp 11</button><button type="button" class="grade-chip" data-grade="12">Lớp 12</button></div>
+          <span class="field-label">Chọn nhân vật của em</span>
+          <div class="grade-pick" id="login-chars"><button type="button" class="char-chip sel" data-char="owl">🦉 Cú</button><button type="button" class="char-chip" data-char="cat">🐱 Mèo</button><button type="button" class="char-chip" data-char="fox">🦊 Cáo</button><button type="button" class="char-chip" data-char="robot">🤖 Rô-bốt</button></div>
           <label class="field-label" for="login-class">Tên lớp học (không bắt buộc)</label>
           <input class="text-input" id="login-class" type="text" maxlength="10" placeholder="Ví dụ: 2A, 7B" autocomplete="off" />
           <div class="login-err" id="login-err"></div>
@@ -2531,6 +2540,8 @@ function valueKeyOf(html) {
       game.locked = true;
       if (star && game.inRetry) star = false; /* V23-E: câu thử lại không tính sao */
       if (star) { game.stars++; el("stars-now").textContent = game.stars; }
+      /* V2 Phase 1: chuoi dung lien tiep trong luot — moi 3 cau dung lien tiep +5 XP (cong o saveRoundResult). */
+      if (star) { game.correctStreak = (game.correctStreak || 0) + 1; if (game.correctStreak % 3 === 0) game.xpBonus = (game.xpBonus || 0) + 5; } else { game.correctStreak = 0; }
       soundGood();
       var fb = el("q-feedback");
       fb.className = "feedback show good";
@@ -2897,15 +2908,17 @@ function valueKeyOf(html) {
       var starHtml = "";
       for (var i = 0; i < finishedLength; i++) starHtml += i < stars ? "⭐" : '<span class="off">⭐</span>';
       el("res-stars").innerHTML = starHtml;
-      if (stars >= 9) { el("res-trophy").textContent = "🏆"; el("res-title").textContent = "Xuất sắc! Em giỏi nhất!"; }
-      else if (stars >= 7) { el("res-trophy").textContent = "🎉"; el("res-title").textContent = "Giỏi lắm!"; }
-      else if (stars >= 4) { el("res-trophy").textContent = "🌟"; el("res-title").textContent = "Tốt lắm, cố lên!"; }
-      else { el("res-trophy").textContent = "💪"; el("res-title").textContent = "Em đã cố gắng rồi!"; }
-      el("res-detail").textContent = "Bài “" + game.title + "”: em giành được " + stars + "/" + finishedLength + " sao. " + (game.noMoreQuestions ? "Chủ đề này đã hết câu mới trong lượt. Em có thể chọn chủ đề khác nhé!" : "Chơi lại để giành thêm sao nhé!");
-      if (typeof saveRoundResult === "function") saveRoundResult(stars);
+      var __teen = (typeof profile !== "undefined" && profile && profile.tone === "teen");
+      if (stars >= 9) { el("res-trophy").textContent = "🏆"; el("res-title").textContent = __teen ? "Xuất sắc!" : "Xuất sắc! Em giỏi nhất!"; }
+      else if (stars >= 7) { el("res-trophy").textContent = "🎉"; el("res-title").textContent = __teen ? "Tốt lắm!" : "Giỏi lắm!"; }
+      else if (stars >= 4) { el("res-trophy").textContent = "🌟"; el("res-title").textContent = __teen ? "Khá tốt, tiếp tục nhé!" : "Tốt lắm, cố lên!"; }
+      else { el("res-trophy").textContent = "💪"; el("res-title").textContent = __teen ? "Cố gắng thêm nhé!" : "Em đã cố gắng rồi!"; }
+      var __v2res = (typeof saveRoundResult === "function") ? saveRoundResult(stars) : null;
+      var __v2note = (__v2res && __v2res.leveledUp) ? " 🎉 Lên cấp " + __v2res.levelAfter + "! (+" + __v2res.xpGain + " XP)" : (__v2res ? " (+" + __v2res.xpGain + " XP)" : "");
+      el("res-detail").textContent = "Bài “" + game.title + "”: em giành được " + stars + "/" + finishedLength + " sao. " + (game.noMoreQuestions ? "Chủ đề này đã hết câu mới trong lượt. Em có thể chọn chủ đề khác nhé!" : "Chơi lại để giành thêm sao nhé!") + __v2note;
       show("scr-result");
       if (stars >= 4) soundCelebrate(); else soundGood();
-      var verdict = stars >= 9 ? "Xuất sắc!" : stars >= 7 ? "Giỏi lắm!" : stars >= 4 ? "Tốt lắm, cố lên nhé!" : "Em đã cố gắng rồi, chơi lại để được nhiều sao hơn nhé!";
+      var verdict = __teen ? (stars >= 9 ? "Xuất sắc!" : stars >= 7 ? "Tốt lắm!" : stars >= 4 ? "Khá tốt, tiếp tục nhé!" : "Cố gắng thêm nhé!") : (stars >= 9 ? "Xuất sắc!" : stars >= 7 ? "Giỏi lắm!" : stars >= 4 ? "Tốt lắm, cố lên nhé!" : "Em đã cố gắng rồi, chơi lại để được nhiều sao hơn nhé!");
       /* Tổng kết đọc ra tiếng chỉ gồm số sao + nhận xét, KHÔNG đọc tên người chơi.
          v18: đọc theo 2 mảnh — đầu câu động (số sao thay đổi) + nhận xét là
          câu cố định có tệp thu sẵn (xem FIXED_AUDIO). */
@@ -5703,19 +5716,53 @@ window.__ensureGrade = function (g, cb) {
     var profile = null;
     var currentGrade = 1;
     var currentTopicKey = null;
-    function loadProfile(){ try { var raw = localStorage.getItem(LS_KEY); if (raw) profile = JSON.parse(raw); } catch(e){ profile = null; } if (profile && !profile.best) profile.best = {}; if (profile && typeof profile.totalStars !== "number") profile.totalStars = 0; }
+    /* ============ V2 PHASE 1: XP / CAP / XU / NHAN VAT / TONE ============
+       Chi them ho so va hien thi; khong doi luat sao, luat choi hay ngan hang cau.
+       Chuyen doi v1->v2: 10 XP va 1 xu cho moi sao cu, lam MOT lan duy nhat
+       nho co v2migrated (xem V2-PHASE0.md muc 5). Cap luon tinh lai tu XP. */
+    var V2_CHARS = { owl: "🦉", cat: "🐱", fox: "🦊", robot: "🤖" };
+    var V2_LEVEL_XP = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700];
+    function v2LevelForXp(xp){ xp = Math.max(0, Math.floor(xp || 0)); var lvl = 1; for (var i = 0; i < V2_LEVEL_XP.length; i++) { if (xp >= V2_LEVEL_XP[i]) lvl = i + 1; } if (xp >= 2700) lvl = 10 + Math.floor((xp - 2700) / 600); return lvl; }
+    function v2NextLevelXp(level){ if (level < 10) return V2_LEVEL_XP[level]; return 2700 + (level - 9) * 600; }
+    function v2XpProgress(xp){ var level = v2LevelForXp(xp); var cur = level < 10 ? V2_LEVEL_XP[level - 1] : 2700 + (level - 10) * 600; var next = v2NextLevelXp(level); var pct = next > cur ? Math.round(((xp || 0) - cur) * 100 / (next - cur)) : 100; return { level: level, cur: cur, next: next, pct: Math.max(0, Math.min(100, pct)) }; }
+    function v2MigrateProfile(pr){ if (!pr) return pr; if (!pr.best) pr.best = {}; if (typeof pr.totalStars !== "number") pr.totalStars = 0; if (pr.subjectXp == null) pr.subjectXp = {}; if (pr.topicPlays == null) pr.topicPlays = {}; if (pr.v2migrated) { if (typeof pr.xp !== "number") pr.xp = 0; if (typeof pr.coins !== "number") pr.coins = 0; if (!V2_CHARS[pr.character]) pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.level = v2LevelForXp(pr.xp); return pr; } pr.xp = (typeof pr.xp === "number" ? pr.xp : 0) + pr.totalStars * 10; pr.coins = (typeof pr.coins === "number" ? pr.coins : 0) + pr.totalStars; if (!V2_CHARS[pr.character]) pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.v2migrated = true; pr.level = v2LevelForXp(pr.xp); return pr; }
+    function v2RoundXp(stars, playsToday){ var mult = playsToday <= 0 ? 1 : playsToday === 1 ? 0.5 : 0.25; return Math.floor((stars || 0) * 10 * mult); }
+    window.__v2 = { chars: V2_CHARS, levelForXp: v2LevelForXp, nextLevelXp: v2NextLevelXp, xpProgress: v2XpProgress, migrate: v2MigrateProfile, roundXp: v2RoundXp };
+    function loadProfile(){ var wasMigrated = false; try { var raw = localStorage.getItem(LS_KEY); if (raw) profile = JSON.parse(raw); } catch(e){ profile = null; } if (profile) { wasMigrated = !!profile.v2migrated; profile = v2MigrateProfile(profile); if (!wasMigrated) saveProfile(); } }
     function saveProfile(){ try { localStorage.setItem(LS_KEY, JSON.stringify(profile)); } catch(e){} }
     function saveRoundResult(stars){
-      if (!profile) return;
+      if (!profile) return { xpGain: 0, levelBefore: 1, levelAfter: 1, leveledUp: false };
+      profile = v2MigrateProfile(profile);
+      var levelBefore = v2LevelForXp(profile.xp || 0);
+      /* V2: he so giam dan cho luot lap cung chu de trong cung ngay. */
+      var now = new Date(); var dstr = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
+      var tp = profile.topicPlays[currentTopicKey] || { date: dstr, count: 0 }; if (tp.date !== dstr) tp = { date: dstr, count: 0 };
+      var playsToday = tp.count; tp.count += 1; profile.topicPlays[currentTopicKey] = tp;
+      var xpGain = v2RoundXp(stars, playsToday);
+      var bonus = 0; try { bonus = (typeof game !== "undefined" && game && game.xpBonus) ? game.xpBonus : 0; } catch (e) { bonus = 0; }
+      xpGain += bonus;
+      profile.xp = (profile.xp || 0) + xpGain;
+      profile.coins = (profile.coins || 0) + Math.floor(xpGain / 10);
+      if (currentTopicKey) { var parts = currentTopicKey.split("|"); var subjId = parts.length >= 2 ? parts[1] : ""; if (subjId) { var sx = profile.subjectXp[subjId] || { xp: 0, level: 1 }; sx.xp += xpGain; sx.level = v2LevelForXp(sx.xp); profile.subjectXp[subjId] = sx; } }
       profile.totalStars = (profile.totalStars||0) + stars;
       if (currentTopicKey) { var prev = profile.best[currentTopicKey]||0; if (stars > prev) profile.best[currentTopicKey] = stars; }
+      profile.level = v2LevelForXp(profile.xp);
       saveProfile(); renderProfileBar();
+      return { xpGain: xpGain, levelBefore: levelBefore, levelAfter: profile.level, leveledUp: profile.level > levelBefore };
     }
     window.saveRoundResult = saveRoundResult;
     function renderProfileBar(){
       var bar = el("profile-bar"); if (!bar) return;
       if (!profile) { bar.innerHTML = ""; return; }
-      bar.innerHTML = '<div class="profile-bar"><span class="avatar">🦉</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
+      profile = v2MigrateProfile(profile);
+      var prog = v2XpProgress(profile.xp || 0);
+      var ch = V2_CHARS[profile.character] || "🦉";
+      var toneLabel = profile.tone === "teen" ? "🎓 Teen" : "🧒 Nhỏ";
+      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-char-sel">Nhân vật:</label><select class="char-sel" id="v2-char-sel" aria-label="Chọn nhân vật"><option value="owl"'+(profile.character==="owl"?" selected":"")+'>🦉 Cú</option><option value="cat"'+(profile.character==="cat"?" selected":"")+'>🐱 Mèo</option><option value="fox"'+(profile.character==="fox"?" selected":"")+'>🦊 Cáo</option><option value="robot"'+(profile.character==="robot"?" selected":"")+'>🤖 Rô-bốt</option></select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
+      var sel = el("v2-char-sel");
+      if (sel) sel.addEventListener("change", function(){ if (V2_CHARS[sel.value]) { profile.character = sel.value; saveProfile(); renderProfileBar(); } });
+      var tg = el("btn-tone-toggle");
+      if (tg) tg.addEventListener("click", function(){ profile.tone = (profile.tone === "teen" ? "kids" : "teen"); saveProfile(); renderProfileBar(); });
       var lo = el("btn-logout");
       if (lo) lo.addEventListener("click", function(){ profile = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} if (window.__exitAudio) window.__exitAudio(); show("scr-login"); });
     }
@@ -5802,16 +5849,20 @@ window.__ensureGrade = function (g, cb) {
     };
     /* ================= ĐĂNG NHẬP ================= */
     var loginGrade = 1;
+    var loginCharacter = "owl";
     function initLogin(){
       renderGradeTabs("login-grades", loginGrade, function(g){ loginGrade = g; initLoginTabsOnly(); }, function(g){ el("login-err").textContent = "Lớp "+g+" sắp ra mắt — hiện đã có Lớp 1 đến Lớp 12 nhé!"; });
       function initLoginTabsOnly(){ renderGradeTabs("login-grades", loginGrade, function(g){ loginGrade = g; initLoginTabsOnly(); }, function(g){ el("login-err").textContent = "Lớp "+g+" sắp ra mắt — hiện đã có Lớp 1 đến Lớp 12 nhé!"; }); }
+      var charBtns = document.querySelectorAll("#login-chars .char-chip");
+      charBtns.forEach(function(b){ b.addEventListener("click", function(){ loginCharacter = b.getAttribute("data-char") || "owl"; charBtns.forEach(function(x){ x.classList.toggle("sel", x === b); }); }); });
       el("btn-login").addEventListener("click", function(){
         var name = el("login-name").value.trim();
         if (!name) { el("login-err").textContent = "Em hãy nhập tên của mình nhé!"; el("login-name").focus(); return; }
         var lop = el("login-class").value.trim();
-        profile = { name: name, grade: loginGrade, lop: lop, totalStars: 0, best: {} };
-        // nếu đã có hồ sơ cùng tên+lớp trên máy này thì giữ lại sao cũ
-        try { var old = localStorage.getItem(LS_KEY); if (old) { var op = JSON.parse(old); if (op && op.name === name && op.grade === loginGrade) { profile.totalStars = op.totalStars||0; profile.best = op.best||{}; } } } catch(e){}
+        profile = { name: name, grade: loginGrade, lop: lop, totalStars: 0, best: {}, xp: 0, coins: 0, character: loginCharacter, tone: (loginGrade >= 6 ? "teen" : "kids"), subjectXp: {}, topicPlays: {}, v2migrated: true };
+        // nếu đã có hồ sơ cùng tên+lớp trên máy này thì giữ lại toàn bộ hồ sơ cũ (đã chuyển đổi v2 nếu cần); nhân vật đổi sau ở thanh hồ sơ
+        try { var old = localStorage.getItem(LS_KEY); if (old) { var op = v2MigrateProfile(JSON.parse(old)); if (op && op.name === name && op.grade === loginGrade) { profile = op; if (lop) profile.lop = lop; } } } catch(e){}
+        profile.level = v2LevelForXp(profile.xp || 0);
         saveProfile();
         currentGrade = loginGrade;
         renderProfileBar(); renderSubjects();
