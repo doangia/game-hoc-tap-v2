@@ -397,6 +397,12 @@
       .panel-toggle { width: 52px; height: 52px; border-radius: 18px; background: var(--card); border: 3px solid var(--line); box-shadow: 0 4px 0 var(--line); font-size: 26px; line-height: 1; cursor: pointer; }
       .panel-toggle:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
       .panel-toggle[aria-expanded="true"] { background: var(--bg-soft); }
+      /* Sửa 24/10 (theo quyết định Danh): nút âm thanh là thiết lập TOÀN CỤC,
+         không thuộc thanh công cụ của từng câu hỏi. Hàng riêng này có nhãn rõ
+         và dải nền riêng để không còn trông như một icon lẻ loi phía trên thẻ. */
+      .v2-global-settings-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #fff8e1; border: 3px solid var(--line); border-radius: 18px; padding: 8px 12px; margin-bottom: 12px; box-shadow: 0 4px 0 var(--line); }
+      .v2-global-settings-label { font-size: 17px; font-weight: 800; }
+      .v2-global-settings-note { font-size: 14px; font-weight: 700; color: var(--ink-soft); }
       .sound-master:active { transform: translateY(2px); }
       .sound-rows { display: flex; gap: 10px; flex-wrap: wrap; }
       .sw-row { display: flex; align-items: center; gap: 10px; border-radius: 16px; padding: 9px 12px; background: var(--bg); border: 3px solid var(--line); font-size: 16px; font-weight: 800; flex: 1 1 150px; justify-content: space-between; }
@@ -611,11 +617,16 @@
             <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
           </div>
         </div>
-        <!-- Sửa 24/10 theo quyết định Danh duyệt: nút loa màn chơi đứng lẻ
-             loi ở hàng riêng này đã BỎ; nút âm thanh giờ nằm trong thanh
-             công cụ #v2-helper-row (xem v2-phase34.js, kể cả thanh tối giản
-             chỉ có icon âm thanh cho lớp 1-5). Panel dưới đây giữ nguyên,
-             chỉ đổi nút mở nó. -->
+        <!-- Sửa 24/10 (theo quyết định Danh): nút âm thanh là thiết lập TOÀN CỤC
+             (giọng đọc, nhạc nền, hiệu ứng) nên KHÔNG nằm trong thanh công cụ
+             của từng câu hỏi. Nó ở hàng riêng có nhãn "Cài đặt chung" này, phía
+             trên thẻ câu hỏi lớn, mọi lớp đều thấy được. Panel dưới đây giữ
+             nguyên, nút này chỉ ẩn/hiện nó. -->
+        <div class="v2-global-settings-row">
+          <span class="v2-global-settings-label">⚙️ Cài đặt chung</span>
+          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-game'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
+          <span class="v2-global-settings-note">Giọng đọc · Nhạc nền · Hiệu ứng</span>
+        </div>
         <div class="sound-panel compact" id="sound-panel-game" hidden>
           <div class="sound-head">
             <span class="sound-title">🔊 Âm thanh</span>
