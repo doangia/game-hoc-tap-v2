@@ -7,13 +7,13 @@
      mở game sau cập nhật; thú đã chọn trước đây (cú/mèo/cáo/
      rô-bốt, kể cả skin rồng/kỳ lân/cánh cụt đã mua) chuyển thành
      thú cưng, không bị xóa.
-   - ASSET TẠM (ghi rõ, không giả vờ đã xong): đợt này dùng emoji
-     + CSS để bấm và kiểm tra chức năng. Búp bê xem trước là hình
-     cột emoji xếp lớp (mũ, đầu, áo/khoác, quần/váy, giày, phụ
-     kiện, thú cưng) trên nền phòng, chưa phải búp bê vẽ SVG toàn
-     thân. Bước thiết kế asset SVG chi tiết (phong cách thống
-     nhất, thứ tự lớp vẽ, danh mục đủ) để CUỐI CÙNG theo lệnh
-     25/10, chưa làm trong đợt này.
+   - ASSET SVG (bước cuối, đã làm): búp bê người Nam/Nữ và toàn bộ
+     trang phục, thú cưng, nền phòng đều vẽ bằng SVG nội tuyến
+     theo một phong cách thống nhất và đúng thứ tự lớp vẽ
+     (nền → thú cưng → tóc sau → thân → giày → quần/váy → áo/váy
+     liền → áo khoác → tóc trước → mũ → kính → phụ kiện). Món
+     nào chưa vẽ được bằng SVG vẫn ghi rõ là tạm, không trình bày
+     như đã xong.
    - Đồ CHỈ TRANG TRÍ: không đổi điểm, XP, gợi ý, trợ giúp hay độ
      khó. Tủ đồ không bao giờ hiện trong màn chơi hay overlay mô
      phỏng (chỉ ở tab Cửa hàng lớp 6-12 và tab Hồ sơ lớp 1-5).
@@ -572,47 +572,298 @@
     return c ? c.c : "#ffffff";
   }
 
-  /* ---------------- Búp bê xem trước (TẠM: cột emoji) ----------------
-     Thứ tự hàng trên búp bê tạm: mũ, đầu (tóc hoặc mặt theo tông
-     da), kính, áo/khoác (váy liền che hàng áo), quần/váy, giày,
-     phụ kiện; thú cưng đứng cạnh ở góc sân khấu. Thay một lớp
-     không làm mất các lớp còn lại (mỗi lớp đọc từ equipped/tryOn
-     riêng). Đây KHÔNG phải thứ tự lớp vẽ SVG cuối cùng (nền →
+  /* ---------------- Búp bê SVG (bước cuối, thay cột emoji) ----------------
+     Phong cách thống nhất: búp bê học sinh dễ thương, tỉ lệ cân
+     đối, mắt to hiền, nét mềm bo tròn, màu phẳng + bóng mềm,
+     nét đủ dày để đọc trên màn hình điện thoại hẹp. Nam và Nữ
+     cùng tư thế đứng và cùng tỉ lệ, chỉ khác nhẹ dáng thân và
+     tóc mặc định. Không chữ, không logo trên quần áo; trang phục
+     kín đáo, phù hợp học sinh lớp 1-12.
+     Thứ tự lớp vẽ, từ sau ra trước, BẮT BUỘC giữ đúng: nền →
      thú cưng → tóc sau → thân → giày → quần/váy → áo/váy liền →
-     áo khoác → tóc trước → mũ → kính → phụ kiện) — thứ tự đó sẽ
-     áp dụng khi vẽ asset SVG ở bước cuối. */
+     áo khoác → tóc trước → mũ → kính → phụ kiện → trang trí
+     trước cảnh. Thay một lớp không làm mất các lớp còn lại.
+     Khung vẽ: viewBox 0 0 240 300, đầu tâm (120,62) bán kính 30,
+     thân y 100-170, chân tới y 232, giày tới y 252. */
+  var SKIN = { light: "#ffdfc4", medium: "#d9a066", dark: "#8d5524" };
+  function skinOf(profile) { return SKIN[profile.skinTone] || SKIN.medium; }
+  function darkHex(hex) {
+    if (!hex || hex.charAt(0) !== "#" || hex.length < 7) return "#000000";
+    var r = Math.round(parseInt(hex.slice(1, 3), 16) * 0.7), g = Math.round(parseInt(hex.slice(3, 5), 16) * 0.7), b = Math.round(parseInt(hex.slice(5, 7), 16) * 0.7);
+    function h(v) { var s = v.toString(16); return s.length === 1 ? "0" + s : s; }
+    return "#" + h(r) + h(g) + h(b);
+  }
+  function bodySVG(profile) {
+    var s = skinOf(profile), fem = profile.gender === "female";
+    var torso = fem ? "M98,102 Q120,96 142,102 L146,168 Q120,178 94,168 Z" : "M94,102 Q120,95 146,102 L150,168 Q120,179 90,168 Z";
+    return '<g data-layer="body">'
+      + '<path d="M108,170 L103,232 M132,170 L137,232" stroke="' + s + '" stroke-width="17" stroke-linecap="round" fill="none"/>'
+      + '<path d="M96,108 L82,158 M144,108 L158,158" stroke="' + s + '" stroke-width="14" stroke-linecap="round" fill="none"/>'
+      + '<rect x="113" y="86" width="14" height="18" rx="5" fill="' + s + '"/>'
+      + '<circle cx="90" cy="62" r="9" fill="' + s + '"/><circle cx="150" cy="62" r="9" fill="' + s + '"/>'
+      + '<circle cx="120" cy="62" r="30" fill="' + s + '"/>'
+      + '<path d="' + torso + '" fill="' + s + '"/>'
+      + '<circle cx="82" cy="162" r="7" fill="' + s + '"/><circle cx="158" cy="162" r="7" fill="' + s + '"/>'
+      + '<path d="M101,48 Q109,44 117,48 M123,48 Q131,44 139,48" stroke="#33302a" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="109" cy="60" rx="4.5" ry="6" fill="#33302a"/><ellipse cx="131" cy="60" rx="4.5" ry="6" fill="#33302a"/>'
+      + '<circle cx="111" cy="58" r="1.8" fill="#ffffff"/><circle cx="133" cy="58" r="1.8" fill="#ffffff"/>'
+      + '<path d="M112,76 Q120,82 128,76" stroke="#33302a" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="100" cy="72" rx="5" ry="3" fill="#f06595" opacity="0.45"/><ellipse cx="140" cy="72" rx="5" ry="3" fill="#f06595" opacity="0.45"/>'
+      + '</g>';
+  }
+  function hairBackSVG(style, c) {
+    if (style === "hair-f-long" || style === "hair-f-wave") return '<g data-layer="back-hair"><path d="M78,62 C78,20 162,20 162,62 L167,170 C160,180 149,174 146,162 L146,82 C132,62 108,62 94,82 L94,162 C91,174 80,180 73,170 Z" fill="' + c + '"/></g>';
+    if (style === "hair-f-pony") return '<g data-layer="back-hair"><path d="M146,36 C168,50 178,80 172,112 C166,118 156,112 154,100 C152,76 148,56 140,44 Z" fill="' + c + '"/><circle cx="120" cy="38" r="34" fill="' + c + '"/></g>';
+    if (style === "hair-f-bob") return '<g data-layer="back-hair"><path d="M84,60 C84,26 156,26 156,60 L158,116 C150,124 142,120 141,110 L141,80 C128,64 112,64 99,80 L99,110 C98,120 90,124 82,116 Z" fill="' + c + '"/></g>';
+    return '<g data-layer="back-hair"><circle cx="120" cy="56" r="33" fill="' + c + '"/></g>';
+  }
+  function hairFrontSVG(style, c) {
+    var cap = '<path d="M90,60 C88,28 152,28 150,60 C144,44 120,40 110,44 C100,48 92,52 90,60 Z" fill="' + c + '"/>';
+    var out = '<g data-layer="front-hair">';
+    if (style === "hair-m-side") out += '<path d="M90,62 C88,28 126,22 150,30 C152,44 150,58 146,62 C138,50 128,44 116,46 C104,48 94,54 90,62 Z" fill="' + c + '"/>';
+    else if (style === "hair-m-curly") out += '<g fill="' + c + '"><circle cx="100" cy="34" r="11"/><circle cx="120" cy="28" r="12"/><circle cx="140" cy="34" r="11"/><circle cx="92" cy="50" r="9"/><circle cx="148" cy="50" r="9"/></g>';
+    else if (style === "hair-m-spike") out += '<path d="M88,58 L96,28 L106,44 L116,22 L126,42 L136,26 L146,44 L152,58 C144,44 120,40 110,44 C100,48 92,52 88,58 Z" fill="' + c + '"/>';
+    else if (style === "hair-f-long") out += '<path d="M90,62 C88,28 108,22 120,24 C132,22 152,28 150,62 C142,48 132,42 120,42 C108,42 98,48 90,62 Z" fill="' + c + '"/><path d="M94,60 L98,118 L107,118 L105,66 Z" fill="' + c + '"/><path d="M146,60 L142,118 L133,118 L135,66 Z" fill="' + c + '"/>';
+    else if (style === "hair-f-pony") out += cap + '<path d="M146,36 C160,44 166,60 164,74 C158,70 152,60 148,48 Z" fill="' + c + '"/>';
+    else if (style === "hair-f-bun") out += cap + '<circle cx="120" cy="22" r="13" fill="' + c + '"/>';
+    else if (style === "hair-f-bob") out += cap + '<path d="M92,58 L96,112 L106,110 L104,64 Z" fill="' + c + '"/><path d="M148,58 L144,112 L134,110 L136,64 Z" fill="' + c + '"/>';
+    else if (style === "hair-f-wave") out += '<path d="M90,62 C88,28 108,22 120,24 C132,22 152,28 150,62 C142,48 132,42 120,42 C108,42 98,48 90,62 Z" fill="' + c + '"/><path d="M94,60 C98,84 90,104 96,128 L106,126 C102,104 108,84 105,66 Z" fill="' + c + '"/><path d="M146,60 C142,84 150,104 144,128 L134,126 C138,104 132,84 135,66 Z" fill="' + c + '"/>';
+    else out += cap;
+    return out + '</g>';
+  }
+  function bgSVG(id) {
+    var inner = "";
+    if (id === "bg-classroom" || id === "nw-bg") inner = '<rect x="0" y="0" width="240" height="244" fill="#e8f3ff"/><rect x="0" y="244" width="240" height="56" fill="#e8dcc0"/><rect x="38" y="36" width="164" height="72" rx="8" fill="#cfe8cf" stroke="#8fbf8f" stroke-width="3"/><path d="M52,60 L190,60 M52,80 L160,80" stroke="#ffffff" stroke-width="3" opacity="0.7"/><rect x="14" y="44" width="18" height="54" rx="3" fill="#ffffff" stroke="#4dabf7" stroke-width="2"/><rect x="208" y="44" width="18" height="54" rx="3" fill="#ffffff" stroke="#4dabf7" stroke-width="2"/>';
+    else if (id === "bg-schoolyard") inner = '<rect x="0" y="0" width="240" height="240" fill="#dff3ff"/><circle cx="204" cy="36" r="20" fill="#ffb703"/><rect x="0" y="240" width="240" height="60" fill="#a8e6a1"/><path d="M0,214 L240,214 M0,228 L240,228" stroke="#ffffff" stroke-width="3"/><rect x="18" y="150" width="10" height="92" fill="#8d5a2b"/><circle cx="23" cy="140" r="30" fill="#5cb85c"/><circle cx="44" cy="152" r="18" fill="#7ed47e"/>';
+    else if (id === "bg-park") inner = '<rect x="0" y="0" width="240" height="238" fill="#e3f6ff"/><circle cx="36" cy="36" r="18" fill="#ffb703"/><rect x="0" y="238" width="240" height="62" fill="#a8e6a1"/><ellipse cx="120" cy="282" rx="52" ry="12" fill="#e8dcc0"/><rect x="196" y="150" width="10" height="92" fill="#8d5a2b"/><circle cx="201" cy="140" r="28" fill="#5cb85c"/><circle cx="30" cy="252" r="5" fill="#f06595"/><circle cx="52" cy="260" r="5" fill="#ffffff"/><circle cx="196" cy="256" r="5" fill="#ffb703"/>';
+    else if (id === "bg-beach") inner = '<rect x="0" y="0" width="240" height="150" fill="#dff3ff"/><circle cx="204" cy="36" r="20" fill="#ffb703"/><rect x="0" y="150" width="240" height="62" fill="#7ecbf2"/><rect x="0" y="212" width="240" height="88" fill="#ffe9b0"/><path d="M40,120 L88,120 L64,88 Z" fill="#f06595"/><path d="M64,88 L64,140" stroke="#8d5a2b" stroke-width="3"/>';
+    else if (id === "bg-bedroom") inner = '<rect x="0" y="0" width="240" height="244" fill="#fff3e0"/><rect x="0" y="244" width="240" height="56" fill="#e8dcc0"/><rect x="170" y="36" width="48" height="56" rx="4" fill="#cfe8ff" stroke="#4dabf7" stroke-width="2"/><ellipse cx="120" cy="272" rx="66" ry="12" fill="#f8bbd0"/><rect x="26" y="196" width="104" height="42" rx="10" fill="#4dabf7"/><rect x="30" y="188" width="30" height="18" rx="8" fill="#ffffff"/>';
+    else if (id === "bg-stage" || id === "box50-bg") inner = '<rect x="0" y="0" width="240" height="244" fill="#3a2b4d"/><rect x="0" y="244" width="240" height="56" fill="#8d5a2b"/><path d="M0,0 L52,0 L30,244 L0,244 Z" fill="#f06595"/><path d="M240,0 L188,0 L210,244 L240,244 Z" fill="#f06595"/><path d="M120,20 L92,120 M120,20 L148,120" stroke="#ffe082" stroke-width="10" opacity="0.35"/><circle cx="60" cy="52" r="4" fill="#ffffff"/><circle cx="180" cy="40" r="4" fill="#ffffff"/><circle cx="120" cy="90" r="4" fill="#ffe082"/>';
+    else inner = '<rect x="0" y="0" width="240" height="244" fill="#fff6e3"/><circle cx="204" cy="36" r="20" fill="#ffb703"/><ellipse cx="120" cy="272" rx="90" ry="14" fill="#f0dfba"/>';
+    return '<g data-layer="background">' + inner + '</g>';
+  }
+  function petSVG(id) {
+    var b = "";
+    if (id === "pet-cat") b = '<ellipse cx="0" cy="12" rx="20" ry="14" fill="#ffb703"/><circle cx="0" cy="-12" r="16" fill="#ffb703"/><path d="M-13,-22 L-10,-36 L-1,-26 Z M13,-22 L10,-36 L1,-26 Z" fill="#ffb703"/><circle cx="-6" cy="-14" r="2.5" fill="#33302a"/><circle cx="6" cy="-14" r="2.5" fill="#33302a"/><path d="M-14,-8 L-26,-10 M-14,-4 L-26,-2 M14,-8 L26,-10 M14,-4 L26,-2" stroke="#33302a" stroke-width="1.5"/>';
+    else if (id === "pet-dog") b = '<ellipse cx="0" cy="12" rx="20" ry="14" fill="#e8b88a"/><circle cx="0" cy="-12" r="16" fill="#e8b88a"/><ellipse cx="-16" cy="-10" rx="7" ry="14" fill="#8d5a2b"/><ellipse cx="16" cy="-10" rx="7" ry="14" fill="#8d5a2b"/><circle cx="-6" cy="-14" r="2.5" fill="#33302a"/><circle cx="6" cy="-14" r="2.5" fill="#33302a"/><ellipse cx="0" cy="-6" rx="4" ry="3" fill="#33302a"/>';
+    else if (id === "pet-rabbit") b = '<ellipse cx="0" cy="12" rx="19" ry="13" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><circle cx="0" cy="-10" r="15" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><ellipse cx="-8" cy="-36" rx="6" ry="18" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><ellipse cx="8" cy="-36" rx="6" ry="18" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><circle cx="-5" cy="-12" r="2.5" fill="#33302a"/><circle cx="5" cy="-12" r="2.5" fill="#33302a"/>';
+    else if (id === "pet-owl") b = '<ellipse cx="0" cy="0" rx="22" ry="24" fill="#8d5a2b"/><ellipse cx="0" cy="8" rx="13" ry="12" fill="#f0dfba"/><circle cx="-9" cy="-8" r="8" fill="#ffffff"/><circle cx="9" cy="-8" r="8" fill="#ffffff"/><circle cx="-9" cy="-8" r="3.5" fill="#33302a"/><circle cx="9" cy="-8" r="3.5" fill="#33302a"/><path d="M-4,0 L4,0 L0,5 Z" fill="#ffb703"/>';
+    else if (id === "pet-fox") b = '<ellipse cx="0" cy="12" rx="19" ry="13" fill="#ff8c42"/><circle cx="0" cy="-12" r="16" fill="#ff8c42"/><path d="M-13,-22 L-11,-38 L-1,-26 Z M13,-22 L11,-38 L1,-26 Z" fill="#ff8c42"/><ellipse cx="0" cy="-4" rx="7" ry="6" fill="#ffffff"/><circle cx="-6" cy="-14" r="2.5" fill="#33302a"/><circle cx="6" cy="-14" r="2.5" fill="#33302a"/>';
+    else if (id === "pet-robot") b = '<rect x="-16" y="-28" width="32" height="26" rx="8" fill="#bfe3f2" stroke="#4dabf7" stroke-width="2"/><path d="M0,-28 L0,-38" stroke="#33302a" stroke-width="2"/><circle cx="0" cy="-40" r="4" fill="#f06595"/><circle cx="-7" cy="-15" r="4" fill="#33302a"/><circle cx="7" cy="-15" r="4" fill="#33302a"/><rect x="-14" y="2" width="28" height="22" rx="6" fill="#bfe3f2" stroke="#4dabf7" stroke-width="2"/>';
+    else if (id === "pet-dragon" || id === "gift-dragonpet") b = '<ellipse cx="0" cy="10" rx="21" ry="15" fill="#5cb85c"/><circle cx="0" cy="-12" r="16" fill="#5cb85c"/><path d="M-10,-24 L-14,-34 L-4,-28 Z M10,-24 L14,-34 L4,-28 Z" fill="#ffb703"/><path d="M-20,2 C-36,-6 -40,8 -30,16 C-22,10 -16,10 -20,2 Z M20,2 C36,-6 40,8 30,16 C22,10 16,10 20,2 Z" fill="#7ed47e"/><circle cx="-6" cy="-14" r="2.5" fill="#33302a"/><circle cx="6" cy="-14" r="2.5" fill="#33302a"/><path d="M-4,-4 Q0,0 4,-4" stroke="#33302a" stroke-width="2" fill="none"/>';
+    else if (id === "pet-unicorn") b = '<ellipse cx="0" cy="12" rx="20" ry="14" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><circle cx="0" cy="-12" r="16" fill="#ffffff" stroke="#e8dcc0" stroke-width="2"/><path d="M-2,-26 L2,-26 L0,-42 Z" fill="#ffb703"/><path d="M-14,-20 C-20,-8 -18,4 -12,12" stroke="#f06595" stroke-width="5" fill="none"/><circle cx="-6" cy="-14" r="2.5" fill="#33302a"/><circle cx="6" cy="-14" r="2.5" fill="#33302a"/>';
+    else if (id === "pet-penguin") b = '<ellipse cx="0" cy="0" rx="20" ry="26" fill="#33302a"/><ellipse cx="0" cy="6" rx="12" ry="16" fill="#ffffff"/><circle cx="-6" cy="-14" r="2.5" fill="#ffffff"/><circle cx="6" cy="-14" r="2.5" fill="#ffffff"/><circle cx="-6" cy="-14" r="1.5" fill="#33302a"/><circle cx="6" cy="-14" r="1.5" fill="#33302a"/><path d="M-3,-6 L3,-6 L0,-2 Z" fill="#ffb703"/>';
+    else b = '<circle cx="0" cy="0" r="18" fill="#ffb703"/>';
+    return '<g transform="translate(172,212)">' + b + '</g>';
+  }
+  function foregroundSVG() {
+    return '<g data-layer="foreground"><circle cx="26" cy="268" r="12" fill="#c68b4e"/><circle cx="16" cy="258" r="6" fill="#c68b4e"/><circle cx="36" cy="258" r="6" fill="#c68b4e"/><circle cx="22" cy="268" r="2" fill="#33302a"/><circle cx="30" cy="268" r="2" fill="#33302a"/><ellipse cx="26" cy="273" rx="4" ry="3" fill="#8d5a2b"/><path d="M214,20 C206,10 192,14 194,26 C196,36 206,42 214,50 C222,42 232,36 234,26 C236,14 222,10 214,20 Z" fill="#f06595"/></g>';
+  }
   function faceEmoji(profile) {
     var mod = TONE_MOD[profile.skinTone] || TONE_MOD.medium;
     if (profile.gender === "female") return "👧" + mod;
     if (profile.gender === "male") return "👦" + mod;
     return "🧒" + mod;
   }
+  /* ---- Quần áo, giày, mũ, kính, phụ kiện (mỗi món một dáng riêng) ---- */
+  function shirtSVG(id, c, dk) {
+    var torso = 'M96,104 L76,122 L84,140 L98,130 L98,170 L142,170 L142,130 L156,140 L164,122 L144,104 Q120,112 96,104 Z';
+    var g = '<g data-layer="shirt">';
+    if (id === "shirt-formal" || id === "box15-suit" || id === "box50-suit") {
+      g += '<path d="M96,104 L82,160 L96,164 L110,110 Z" fill="' + c + '"/><path d="M144,104 L158,160 L144,164 L130,110 Z" fill="' + c + '"/>';
+      g += '<path d="M96,104 L144,104 L148,170 L92,170 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M108,104 L120,118 L112,132 L104,112 Z M132,104 L120,118 L128,132 L136,112 Z" fill="' + dk + '" opacity="0.55"/>';
+      g += '<circle cx="120" cy="132" r="2.5" fill="' + dk + '"/><circle cx="120" cy="148" r="2.5" fill="' + dk + '"/>';
+      if (id === "box15-suit") g += '<path d="M112,104 L120,116 L128,104" stroke="#ffb703" stroke-width="3" fill="none"/>';
+      if (id === "box50-suit") g += '<rect x="92" y="104" width="14" height="6" rx="3" fill="#ffb703"/><rect x="134" y="104" width="14" height="6" rx="3" fill="#ffb703"/><path d="M112,104 L120,116 L128,104" stroke="#ffb703" stroke-width="3" fill="none"/>';
+    } else if (id === "shirt-sport") {
+      g += '<path d="M102,104 L116,100 Q120,110 124,100 L138,104 L142,170 L98,170 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M100,132 L140,132 M100,146 L140,146" stroke="' + dk + '" stroke-width="3" opacity="0.5"/>';
+    } else if (id === "shirt-trad" || id === "box30-shirt") {
+      g += '<path d="M96,104 L144,104 L148,198 L92,198 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M108,104 L120,122 L132,104" stroke="' + dk + '" stroke-width="2.5" fill="none"/>';
+      g += '<path d="M120,122 L120,196" stroke="' + dk + '" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>';
+      if (id === "box30-shirt") g += '<path d="M98,180 L142,180" stroke="#ffb703" stroke-width="3"/>';
+    } else {
+      g += '<path d="' + torso + '" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M108,104 Q120,114 132,104" stroke="' + dk + '" stroke-width="2" fill="none"/>';
+      if (id === "nw-shirt" || id === "box5-shirt") g += '<path d="M98,140 L142,140" stroke="' + dk + '" stroke-width="3" opacity="0.5"/>';
+    }
+    return g + '</g>';
+  }
+  function coatSVG(id, c, dk) {
+    var base = (id === "coat-lab") ? "#ffffff" : c;
+    var trim = (id === "coat-lab") ? c : dk;
+    var g = '<g data-layer="coat">';
+    if (id === "box20-coat") {
+      g += '<path d="M88,104 L108,104 L102,208 L76,200 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M152,104 L132,104 L138,208 L164,200 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M120,128 L132,142 L120,158 L108,142 Z" fill="#bfe9ff" stroke="#4dabf7" stroke-width="2"/>';
+    } else {
+      g += '<path d="M100,98 Q120,86 140,98 Q138,104 132,104 Q120,98 108,104 Q102,104 100,98 Z" fill="' + base + '"/>';
+      g += '<path d="M90,104 L108,104 L104,188 L86,184 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M150,104 L132,104 L136,188 L154,184 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M92,104 L80,160 L92,164 L106,110 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M148,104 L160,160 L148,164 L134,110 Z" fill="' + base + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      if (id === "coat-wool") g += '<circle cx="112" cy="132" r="3" fill="' + trim + '"/><circle cx="112" cy="152" r="3" fill="' + trim + '"/>';
+      if (id === "coat-lab") g += '<rect x="130" y="150" width="16" height="14" rx="3" fill="none" stroke="' + trim + '" stroke-width="2"/>';
+      if (id === "box10-coat") g += '<path d="M92,120 L106,120 M94,150 L104,150" stroke="#ffffff" stroke-width="3" opacity="0.8"/>';
+    }
+    return g + '</g>';
+  }
+  function bottomSVG(id, c, dk) {
+    var g = '<g data-layer="bottom">';
+    if (id === "pants-short") g += '<path d="M94,166 L118,166 L116,196 L96,196 Z M122,166 L146,166 L144,196 L124,196 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+    else if (id === "pants-jean") g += '<path d="M94,166 L118,166 L114,232 L96,232 Z M122,166 L146,166 L144,232 L126,232 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/><rect x="96" y="222" width="18" height="8" fill="' + dk + '" opacity="0.4"/><rect x="126" y="222" width="18" height="8" fill="' + dk + '" opacity="0.4"/>';
+    else if (id === "dress-short") g += '<path d="M94,166 L146,166 L156,198 L84,198 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+    else g += '<path d="M94,166 L118,166 L114,232 L96,232 Z M122,166 L146,166 L144,232 L126,232 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+    return g + '</g>';
+  }
+  function dressSVG(id, c, dk) {
+    var g = '<g data-layer="dress">';
+    if (id === "dress-aodai" || id === "box30-dress") {
+      g += '<path d="M102,168 L118,168 L116,232 L104,232 Z M122,168 L138,168 L136,232 L124,232 Z" fill="#fff8e1" stroke="#e8dcc0" stroke-width="2"/>';
+      g += '<path d="M98,102 L142,102 L150,236 L120,244 L90,236 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M120,102 L120,240" stroke="' + dk + '" stroke-width="2" stroke-dasharray="8 5" opacity="0.55"/>';
+      if (id === "box30-dress") g += '<path d="M96,210 L144,210" stroke="#ffb703" stroke-width="3"/><circle cx="120" cy="140" r="4" fill="#ffb703"/>';
+    } else if (id === "dress-long" || id === "box15-dress" || id === "box50-dress") {
+      var train = (id === "box50-dress") ? 'M96,102 L144,102 L176,254 Q120,266 64,254 Z' : 'M98,102 L142,102 L168,248 Q120,258 72,248 Z';
+      g += '<path d="' + train + '" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M104,132 Q120,140 136,132" stroke="' + dk + '" stroke-width="2" fill="none" opacity="0.6"/>';
+      if (id === "box15-dress") g += '<circle cx="104" cy="170" r="3" fill="#ffffff" opacity="0.85"/><circle cx="136" cy="190" r="3" fill="#ffffff" opacity="0.85"/><circle cx="120" cy="215" r="3" fill="#ffffff" opacity="0.85"/>';
+      if (id === "box50-dress") g += '<path d="M96,150 L144,150" stroke="#ffb703" stroke-width="3"/><circle cx="120" cy="120" r="5" fill="#ffb703"/>';
+    } else {
+      g += '<path d="M100,102 L140,102 L146,166 L94,166 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M92,166 L148,166 L158,200 L82,200 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+    }
+    return g + '</g>';
+  }
+  function shoesSVG(id, c, dk) {
+    var g = '<g data-layer="shoes">';
+    if (id === "shoes-boot") {
+      g += '<path d="M96,196 L116,196 L114,252 L92,252 Q90,224 96,196 Z M124,196 L144,196 L150,224 L148,252 L126,252 L126,196 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+    } else if (id === "shoes-doll") {
+      g += '<ellipse cx="106" cy="244" rx="14" ry="8" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><ellipse cx="134" cy="244" rx="14" ry="8" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><path d="M96,240 L116,240 M124,240 L144,240" stroke="' + dk + '" stroke-width="2"/>';
+    } else if (id === "shoes-sandal") {
+      g += '<ellipse cx="106" cy="246" rx="15" ry="6" fill="' + dk + '"/><ellipse cx="134" cy="246" rx="15" ry="6" fill="' + dk + '"/><path d="M98,242 L112,236 M126,236 L140,242" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/>';
+    } else {
+      g += '<path d="M90,238 Q90,252 108,252 L118,252 L116,236 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<path d="M150,238 Q150,252 132,252 L122,252 L124,236 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<rect x="90" y="248" width="28" height="5" rx="2" fill="#ffffff"/><rect x="122" y="248" width="28" height="5" rx="2" fill="#ffffff"/>';
+      if (id === "box10-shoes" || id === "box20-shoes") g += '<path d="M96,242 L112,242 M128,242 L144,242" stroke="#ffffff" stroke-width="2" opacity="0.9"/>';
+    }
+    return g + '</g>';
+  }
+  function hatSVG(id, c, dk) {
+    var g = '<g data-layer="hat">';
+    if (id === "hat-wide") g += '<ellipse cx="120" cy="44" rx="50" ry="11" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><path d="M100,44 Q100,18 120,18 Q140,18 140,44 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "hat-beanie") g += '<path d="M90,48 Q90,14 120,14 Q150,14 150,48 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><path d="M100,24 L100,46 M112,18 L112,46 M128,18 L128,46 M140,24 L140,46" stroke="' + dk + '" stroke-width="2" opacity="0.5"/><circle cx="120" cy="12" r="7" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "hat-nonla" || id === "box30-hat") g += '<path d="M68,46 L120,6 L172,46 Q120,58 68,46 Z" fill="#ffe9b0" stroke="#c68b4e" stroke-width="2" stroke-linejoin="round"/><path d="M96,34 L144,34 M84,42 L156,42" stroke="#c68b4e" stroke-width="1.5" opacity="0.6"/>';
+    else if (id === "gift-grad") g += '<rect x="104" y="30" width="32" height="12" rx="3" fill="#33302a"/><path d="M120,6 L164,24 L120,42 L76,24 Z" fill="#33302a"/><path d="M156,30 L156,52" stroke="#ffb703" stroke-width="2.5"/><circle cx="156" cy="55" r="4" fill="#ffb703"/>';
+    else if (id === "gift-crown" || id === "box20-crown" || id === "box50-crown") {
+      var tall = (id === "box50-crown");
+      g += '<path d="' + (tall ? 'M94,48 L94,18 L106,32 L120,12 L134,32 L146,18 L146,48 Z' : 'M96,48 L96,26 L108,36 L120,22 L132,36 L144,26 L144,48 Z') + '" fill="#ffb703" stroke="#c68b4e" stroke-width="2" stroke-linejoin="round"/>';
+      g += '<circle cx="120" cy="36" r="4" fill="#f06595"/><circle cx="106" cy="40" r="3" fill="#4dabf7"/><circle cx="134" cy="40" r="3" fill="#5cb85c"/>';
+      if (tall) g += '<circle cx="120" cy="8" r="5" fill="#ffb703" stroke="#c68b4e" stroke-width="2"/>';
+      if (id === "box20-crown") g += '<path d="M120,26 L128,34 L120,42 L112,34 Z" fill="#bfe9ff" stroke="#4dabf7" stroke-width="1.5"/>';
+    } else {
+      g += '<path d="M92,46 Q92,14 120,14 Q148,14 148,46 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+      g += '<ellipse cx="132" cy="46" rx="26" ry="7" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    }
+    return g + '</g>';
+  }
+  function glassesSVG(id, c, dk) {
+    var g = '<g data-layer="glasses" stroke="#33302a" stroke-width="2.5" fill="none">';
+    if (id === "face-square") g += '<rect x="94" y="52" width="26" height="20" rx="5"/><rect x="120" y="52" width="26" height="20" rx="5"/><path d="M120,60 L120,60 M94,60 L84,56 M146,60 L156,56"/>';
+    else if (id === "face-sun" || id === "box15-glasses") g += '<g fill="#33302a"><ellipse cx="107" cy="62" rx="14" ry="11"/><ellipse cx="133" cy="62" rx="14" ry="11"/></g><path d="M112,56 L128,56" stroke="#ffffff" stroke-width="2" opacity="0.6"/>';
+    else if (id === "face-star") g += '<g fill="' + c + '" stroke="#33302a"><path d="M107,48 L110,58 L120,58 L112,65 L115,75 L107,69 L99,75 L102,65 L94,58 L104,58 Z"/><path d="M133,48 L136,58 L146,58 L138,65 L141,75 L133,69 L125,75 L128,65 L120,58 L130,58 Z"/></g>';
+    else g += '<circle cx="107" cy="62" r="12"/><circle cx="133" cy="62" r="12"/><path d="M119,60 Q120,58 121,60 M95,60 L85,56 M145,60 L155,56"/>';
+    return g + '</g>';
+  }
+  function accessorySVG(id, c, dk) {
+    var g = '<g data-layer="accessory">';
+    if (id === "acc-backpack") g += '<rect x="48" y="108" width="30" height="54" rx="10" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><rect x="56" y="124" width="14" height="18" rx="4" fill="' + dk + '" opacity="0.45"/><path d="M56,108 Q62,98 70,108" stroke="' + dk + '" stroke-width="3" fill="none"/>';
+    else if (id === "acc-bag") g += '<path d="M164,132 Q176,112 190,132" stroke="' + dk + '" stroke-width="3" fill="none"/><rect x="162" y="130" width="30" height="34" rx="8" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "acc-scarf") g += '<path d="M102,100 Q120,112 138,100 L138,114 Q120,126 102,114 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><path d="M128,112 L136,152 L124,152 L120,116 Z" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "acc-headphone") g += '<path d="M86,62 Q120,10 154,62" stroke="' + dk + '" stroke-width="6" fill="none"/><rect x="78" y="54" width="14" height="22" rx="6" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/><rect x="148" y="54" width="14" height="22" rx="6" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "acc-bracelet") g += '<rect x="76" y="156" width="14" height="8" rx="4" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    else if (id === "gift-wings") g += '<path d="M100,118 C70,100 44,104 38,124 C56,128 60,140 52,154 C74,150 92,138 102,126 Z" fill="#ffffff" stroke="#d9d9d9" stroke-width="2" stroke-linejoin="round"/><path d="M140,118 C170,100 196,104 202,124 C184,128 180,140 188,154 C166,150 148,138 138,126 Z" fill="#ffffff" stroke="#d9d9d9" stroke-width="2" stroke-linejoin="round"/><path d="M60,124 L88,128 M180,124 L152,128" stroke="#d9d9d9" stroke-width="2"/>';
+    else g += '<rect x="76" y="156" width="14" height="8" rx="4" fill="' + c + '" stroke="' + dk + '" stroke-width="2"/>';
+    return g + '</g>';
+  }
+  /* Hình thu nhỏ của một món đồ, dùng trong lưới cửa hàng/tủ đồ. */
+  function itemThumbSVG(profile, it) {
+    var c = colorHexOf(profile, it.id), dk = darkHex(c), frag = "", vb = "0 0 100 100";
+    if (it.slot === "hair") { vb = "65 5 110 180"; frag = hairBackSVG(it.id, c) + '<circle cx="120" cy="62" r="30" fill="' + skinOf(profile) + '"/>' + hairFrontSVG(it.id, c); }
+    else if (it.slot === "face") { vb = "80 40 80 50"; frag = glassesSVG(it.id, c, dk); }
+    else if (it.slot === "shirt") { vb = "70 95 100 90"; frag = shirtSVG(it.id, c, dk); }
+    else if (it.slot === "coat") { vb = "70 80 100 120"; frag = coatSVG(it.id, c, dk); }
+    else if (it.slot === "bottom") {
+      if (it.kind === "dress") { vb = "60 95 120 175"; frag = dressSVG(it.id, c, dk); }
+      else { vb = "80 160 80 85"; frag = bottomSVG(it.id, c, dk); }
+    }
+    else if (it.slot === "shoes") { vb = "75 195 90 65"; frag = shoesSVG(it.id, c, dk); }
+    else if (it.slot === "hat") { vb = "60 0 120 65"; frag = hatSVG(it.id, c, dk); }
+    else if (it.slot === "accessory") {
+      if (it.id === "gift-wings") vb = "30 90 180 100";
+      else if (it.id === "acc-headphone") vb = "70 10 100 80";
+      else vb = "40 90 160 100";
+      frag = accessorySVG(it.id, c, dk);
+    }
+    else if (it.slot === "background") { vb = "0 0 240 300"; frag = bgSVG(it.id); }
+    else if (it.slot === "pet") { vb = "130 150 100 120"; frag = '<g data-layer="pet">' + petSVG(it.id) + '</g>'; }
+    return '<svg class="v2-thumb-svg" viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + escHtml(it.name) + '">' + frag + '</svg>';
+  }
+  /* Thứ tự lớp thực tế đang vẽ cho một hồ sơ — dùng để kiểm tra. */
+  function dollLayers(profile) {
+    var eq = effectiveEquipped(profile), out = ["background"];
+    if (eq.pet) out.push("pet");
+    if (eq.hair) out.push("back-hair");
+    out.push("body");
+    if (eq.shoes) out.push("shoes");
+    if (eq.bottom) out.push(eq.bottom && ITEMS[eq.bottom] && ITEMS[eq.bottom].kind === "dress" ? "dress" : "bottom");
+    if (eq.bottom && ITEMS[eq.bottom] && ITEMS[eq.bottom].kind === "dress") { /* váy liền che hàng áo: không vẽ lớp áo */ }
+    else if (eq.shirt) out.push("shirt");
+    if (eq.coat) out.push("coat");
+    if (eq.hair) out.push("front-hair");
+    if (eq.hat) out.push("hat");
+    if (eq.face) out.push("glasses");
+    if (eq.accessory) out.push("accessory");
+    out.push("foreground");
+    return out;
+  }
   function dollHTML(profile, big) {
     var w = ensureWardrobe(profile), eq = effectiveEquipped(profile);
     var bgId = eq.background || null, bg = bgId ? ITEMS[bgId] : null;
     var grad = (bgId && BG_GRADIENT[bgId]) || "#fff6e3";
-    var head = eq.hair ? ITEMS[eq.hair].emoji : faceEmoji(profile);
     var dress = eq.bottom && ITEMS[eq.bottom] && ITEMS[eq.bottom].kind === "dress";
-    var rows = "";
-    if (eq.hat) rows += "<div class=\"v2-doll-row v2-doll-hat\">" + ITEMS[eq.hat].emoji + "</div>";
-    rows += "<div class=\"v2-doll-row v2-doll-head\">" + escHtml(head) + "</div>";
-    if (eq.face) rows += "<div class=\"v2-doll-row v2-doll-face\">" + ITEMS[eq.face].emoji + "</div>";
-    if (!dress) {
-      if (eq.coat) rows += "<div class=\"v2-doll-row v2-doll-top\">" + ITEMS[eq.coat].emoji + "</div>";
-      else if (eq.shirt) rows += "<div class=\"v2-doll-row v2-doll-top\">" + ITEMS[eq.shirt].emoji + "</div>";
+    var svg = '<svg class="v2-doll-svg" viewBox="0 0 240 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nhân vật của bạn">';
+    svg += bgSVG(bgId);
+    if (eq.pet) svg += '<g data-layer="pet">' + petSVG(eq.pet) + '</g>';
+    if (eq.hair) svg += hairBackSVG(eq.hair, colorHexOf(profile, eq.hair));
+    svg += bodySVG(profile);
+    if (eq.shoes) svg += shoesSVG(eq.shoes, colorHexOf(profile, eq.shoes), darkHex(colorHexOf(profile, eq.shoes)));
+    if (eq.bottom) {
+      var bc = colorHexOf(profile, eq.bottom);
+      svg += dress ? dressSVG(eq.bottom, bc, darkHex(bc)) : bottomSVG(eq.bottom, bc, darkHex(bc));
     }
-    if (eq.bottom) rows += "<div class=\"v2-doll-row v2-doll-bottom" + (dress ? " v2-doll-dress" : "") + "\">" + ITEMS[eq.bottom].emoji + "</div>";
-    if (eq.shoes) rows += "<div class=\"v2-doll-row v2-doll-shoes\">" + ITEMS[eq.shoes].emoji + "</div>";
-    if (eq.accessory) rows += "<div class=\"v2-doll-row v2-doll-acc\">" + ITEMS[eq.accessory].emoji + "</div>";
-    var pet = eq.pet ? "<div class=\"v2-doll-pet\" title=\"Thú cưng\">" + ITEMS[eq.pet].emoji + "</div>" : "";
+    if (!dress && eq.shirt) svg += shirtSVG(eq.shirt, colorHexOf(profile, eq.shirt), darkHex(colorHexOf(profile, eq.shirt)));
+    if (eq.coat) svg += coatSVG(eq.coat, colorHexOf(profile, eq.coat), darkHex(colorHexOf(profile, eq.coat)));
+    if (eq.hair) svg += hairFrontSVG(eq.hair, colorHexOf(profile, eq.hair));
+    if (eq.hat) svg += hatSVG(eq.hat, colorHexOf(profile, eq.hat), darkHex(colorHexOf(profile, eq.hat)));
+    if (eq.face) svg += glassesSVG(eq.face, colorHexOf(profile, eq.face), darkHex(colorHexOf(profile, eq.face)));
+    if (eq.accessory) svg += accessorySVG(eq.accessory, colorHexOf(profile, eq.accessory), darkHex(colorHexOf(profile, eq.accessory)));
+    svg += foregroundSVG();
+    svg += '</svg>';
     var tryNote = "";
     var trySlots = Object.keys(w.tryOn);
     if (trySlots.length) {
       var names = trySlots.map(function (s) { return ITEMS[w.tryOn[s]] ? ITEMS[w.tryOn[s]].name : s; });
       tryNote = "<div class=\"v2-try-note\">👀 Đang mặc thử: " + names.map(escHtml).join(" · ") + " — chưa trừ xu</div>";
     }
-    return "<div class=\"v2-doll-stage" + (big ? " v2-doll-big" : "") + "\" style=\"background:" + grad + "\"><span class=\"v2-doll-decor v2-decor-bear\" aria-hidden=\"true\">🧸</span><span class=\"v2-doll-decor v2-decor-heart\" aria-hidden=\"true\">💗</span><div class=\"v2-doll\">" + rows + "</div>" + pet + "</div>" + tryNote;
+    return "<div class=\"v2-doll-stage" + (big ? " v2-doll-big" : "") + "\" style=\"background:" + grad + "\">" + svg + "</div>" + tryNote;
   }
+
   function itemTileHTML(profile, it, mode, teen) {
     var w = ensureWardrobe(profile), owned = w.owned.indexOf(it.id) !== -1;
     var eq = effectiveEquipped(profile), wearing = eq[it.slot] === it.id && !w.tryOn[it.slot];
@@ -629,14 +880,14 @@
     else if (locked) state = "<span class=\"v2-state\">🔒 Cần cấp " + it.level + "</span>";
     else state = "<span class=\"v2-state\">" + it.price + " 🪙</span>";
     var cls = "v2-item" + (trying ? " trying" : "") + (wearing ? " wearing" : "") + (locked ? " locked" : "") + (it.source === "gift" ? " v2-gold" : "");
-    return "<div class=\"" + cls + "\" data-wd=\"tile:" + it.id + "\"><span class=\"v2-item-emoji\">" + it.emoji + "</span><span class=\"v2-item-name\">" + escHtml(it.name) + "</span><span class=\"v2-item-meta\">" + escHtml(it.themes.map(function (t) { return t === "school" ? "Đi học" : t === "sport" ? "Thể thao" : t === "party" ? "Dự tiệc" : "Truyền thống"; }).join(" · ")) + "</span><span class=\"v2-item-dots\">" + dots + "</span>" + state + "</div>";
+    return "<div class=\"" + cls + "\" data-wd=\"tile:" + it.id + "\"><span class=\"v2-item-emoji\">" + itemThumbSVG(profile, it) + "</span><span class=\"v2-item-name\">" + escHtml(it.name) + "</span><span class=\"v2-item-meta\">" + escHtml(it.themes.map(function (t) { return t === "school" ? "Đi học" : t === "sport" ? "Thể thao" : t === "party" ? "Dự tiệc" : "Truyền thống"; }).join(" · ")) + "</span><span class=\"v2-item-dots\">" + dots + "</span>" + state + "</div>";
   }
   /* ---------------- Giao diện trình duyệt ---------------- */
   var uiState = { mode: "shop", cat: "shirt", theme: "", container: null };
   function injectCss() {
     if (typeof document === "undefined" || document.getElementById("v2-wd-css")) return;
     var s = document.createElement("style"); s.id = "v2-wd-css";
-    s.textContent = ".v2-wd{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-wd h3{margin:2px 0 10px;font-size:18px}.v2-wd-currency{font-weight:800;background:#fff8e1;border:3px solid #f0dfba;border-radius:14px;padding:8px 12px;margin-bottom:12px}.v2-wd-layout{display:flex;gap:12px;align-items:flex-start}.v2-wd-catbar{display:flex;flex-direction:column;gap:6px;flex-shrink:0}.v2-wd-catbar button{width:56px;height:56px;font-size:26px;border-radius:16px;background:#fff;border:3px solid #f0dfba;cursor:pointer;padding:0}.v2-wd-catbar button.sel{background:#ffe082;border-color:#ffb703}.v2-wd-catbar button span{display:block;font-size:11px;font-weight:800}.v2-wd-main{flex:1;min-width:0}.v2-doll-stage{position:relative;border:3px solid #f0dfba;border-radius:22px;padding:16px 8px 10px;text-align:center;overflow:hidden;min-height:340px}.v2-doll-decor{position:absolute;font-size:44px;pointer-events:none;opacity:.9}.v2-decor-bear{left:8px;bottom:8px}.v2-decor-heart{right:10px;top:10px}.v2-doll{position:relative;z-index:2}.v2-doll-row{line-height:1;margin-top:-14px}.v2-doll-row:first-child{margin-top:0}.v2-doll-head{font-size:88px}.v2-doll-hat{font-size:56px}.v2-doll-face{font-size:40px}.v2-doll-top{font-size:72px}.v2-doll-bottom{font-size:72px}.v2-doll-dress{font-size:88px}.v2-doll-shoes{font-size:64px}.v2-doll-acc{font-size:48px}.v2-doll-pet{position:absolute;right:12px;bottom:10px;font-size:56px;z-index:3}.v2-try-note{font-weight:800;background:#fff8e1;border:3px solid #f0dfba;border-radius:12px;padding:8px 10px;margin-top:10px}.v2-doll-big .v2-doll-head{font-size:130px}.v2-doll-big .v2-doll-top,.v2-doll-big .v2-doll-bottom{font-size:104px}.v2-doll-big .v2-doll-dress{font-size:128px}.v2-doll-big .v2-doll-shoes{font-size:92px}.v2-wd-trybar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#e8f3ff;border:3px solid #4dabf7;border-radius:14px;padding:10px 12px;margin:10px 0;font-weight:800}.v2-wd-trybar button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-trybar button:disabled{opacity:.5}.v2-wd-modes{display:flex;gap:8px;margin:12px 0}.v2-wd-modes button{flex:1;border-radius:14px;padding:10px 6px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-modes button.sel{background:#ffe082;border-color:#ffb703}.v2-wd-themes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.v2-wd-themes button{border-radius:20px;padding:6px 10px;font-weight:700;background:#fff;border:2px solid #f0dfba;cursor:pointer}.v2-wd-themes button.sel{background:#ffe082}.v2-wd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.v2-item{border:3px solid #f0dfba;border-radius:18px;padding:10px 6px;text-align:center;background:#fff;cursor:pointer}.v2-item.trying{border-color:#4dabf7;box-shadow:0 4px 0 #4dabf7}.v2-item.wearing{border-color:#2fbf71;box-shadow:0 4px 0 #2fbf71}.v2-item.locked{opacity:.55}.v2-item.v2-gold{border-color:#ffb703;box-shadow:0 4px 0 #ffb703}.v2-item-emoji{font-size:44px;line-height:1.1;display:block}.v2-item-name{font-weight:800;font-size:14px;display:block;margin-top:4px}.v2-item-meta{font-size:12px;font-weight:600;color:#6f675a;display:block}.v2-item-dots{display:flex;gap:4px;justify-content:center;margin:6px 0}.v2-dot{width:22px;height:22px;border-radius:50%;border:2px solid #ccc;cursor:pointer;padding:0}.v2-dot.sel{border-color:#33302a;outline:2px solid #ffb703}.v2-state{font-weight:800;font-size:13px;display:block}.v2-gold-ribbon{font-weight:800;font-size:13px;display:block;color:#b8860b}.v2-wd-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v2-wd-actions button{flex:1;min-width:130px;border-radius:14px;padding:10px 8px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-outfits{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.v2-wd-outfits button{border-radius:20px;padding:8px 12px;font-weight:800;background:#fff8e1;border:3px solid #f0dfba;cursor:pointer}.v2-wd-box{border:3px solid #f0dfba;border-radius:18px;padding:12px;margin:10px 0;background:#fff}.v2-wd-box h4{margin:0 0 6px;font-size:16px}.v2-wd-box button{border-radius:12px;padding:8px 12px;font-weight:800;background:#ffb703;border:3px solid #f0dfba;cursor:pointer}.v2-wd-box button:disabled{opacity:.5}.v2-wd-gender{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.v2-wd-gender button{border-radius:14px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-gender button.sel{background:#ffe082;border-color:#ffb703}.v2-level-banner{position:fixed;left:50%;transform:translateX(-50%);top:76px;z-index:950;background:#fff;border:3px solid #ffb703;border-radius:18px;padding:14px 18px;font-weight:800;box-shadow:0 6px 0 #ffb703;text-align:center;max-width:min(480px,92vw)}.v2-level-banner .v2-jump{display:inline-block;animation:v2jump .6s ease infinite alternate;font-size:44px}.@keyframes v2jump{from{transform:translateY(0)}to{transform:translateY(-14px)}}.v2-confetti{position:fixed;inset:0;z-index:960;pointer-events:none;overflow:hidden}.v2-confetti span{position:absolute;top:-30px;font-size:30px;animation:v2fall 2.6s linear forwards}.@keyframes v2fall{to{transform:translateY(110vh) rotate(360deg)}}.v2-gate{position:fixed;inset:0;z-index:10000;background:#fff6e3;overflow:auto;padding:24px 16px;text-align:center}.v2-gate .v2-gate-card{max-width:520px;margin:0 auto;background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:20px;box-shadow:0 6px 0 #f0dfba}.v2-gate button{border-radius:16px;padding:14px 18px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer;font-size:20px;margin:6px}.v2-gate button.sel{background:#ffe082;border-color:#ffb703}.v2-preview-overlay{position:fixed;inset:0;z-index:970;background:rgba(255,246,227,.97);overflow:auto;padding:18px;text-align:center}.v2-preview-overlay .v2-preview-card{max-width:520px;margin:0 auto}.v2-preview-overlay button{border-radius:14px;padding:10px 16px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer;margin:8px}@media (max-width:560px){.v2-wd-layout{flex-direction:column}.v2-wd-catbar{flex-direction:row;overflow-x:auto;width:100%;padding-bottom:4px}.v2-wd-catbar button{flex-shrink:0}.v2-doll-stage{min-height:300px}}@media (prefers-reduced-motion:reduce){.v2-level-banner .v2-jump{animation:none}.v2-confetti span{animation:none}}";
+    s.textContent = ".v2-wd{background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:14px 16px;margin-bottom:16px;box-shadow:0 4px 0 #f0dfba}.v2-wd h3{margin:2px 0 10px;font-size:18px}.v2-wd-currency{font-weight:800;background:#fff8e1;border:3px solid #f0dfba;border-radius:14px;padding:8px 12px;margin-bottom:12px}.v2-wd-layout{display:flex;gap:12px;align-items:flex-start}.v2-wd-catbar{display:flex;flex-direction:column;gap:6px;flex-shrink:0}.v2-wd-catbar button{width:56px;height:56px;font-size:26px;border-radius:16px;background:#fff;border:3px solid #f0dfba;cursor:pointer;padding:0}.v2-wd-catbar button.sel{background:#ffe082;border-color:#ffb703}.v2-wd-catbar button span{display:block;font-size:11px;font-weight:800}.v2-wd-main{flex:1;min-width:0}.v2-doll-stage{position:relative;border:3px solid #f0dfba;border-radius:22px;padding:16px 8px 10px;text-align:center;overflow:hidden;min-height:340px}.v2-doll-decor{position:absolute;font-size:44px;pointer-events:none;opacity:.9}.v2-decor-bear{left:8px;bottom:8px}.v2-decor-heart{right:10px;top:10px}.v2-doll{position:relative;z-index:2}.v2-doll-row{line-height:1;margin-top:-14px}.v2-doll-row:first-child{margin-top:0}.v2-doll-head{font-size:88px}.v2-doll-hat{font-size:56px}.v2-doll-face{font-size:40px}.v2-doll-top{font-size:72px}.v2-doll-bottom{font-size:72px}.v2-doll-dress{font-size:88px}.v2-doll-shoes{font-size:64px}.v2-doll-acc{font-size:48px}.v2-doll-pet{position:absolute;right:12px;bottom:10px;font-size:56px;z-index:3}.v2-try-note{font-weight:800;background:#fff8e1;border:3px solid #f0dfba;border-radius:12px;padding:8px 10px;margin-top:10px}.v2-doll-big .v2-doll-head{font-size:130px}.v2-doll-big .v2-doll-top,.v2-doll-big .v2-doll-bottom{font-size:104px}.v2-doll-big .v2-doll-dress{font-size:128px}.v2-doll-big .v2-doll-shoes{font-size:92px}.v2-wd-trybar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#e8f3ff;border:3px solid #4dabf7;border-radius:14px;padding:10px 12px;margin:10px 0;font-weight:800}.v2-wd-trybar button{border-radius:12px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-trybar button:disabled{opacity:.5}.v2-wd-modes{display:flex;gap:8px;margin:12px 0}.v2-wd-modes button{flex:1;border-radius:14px;padding:10px 6px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-modes button.sel{background:#ffe082;border-color:#ffb703}.v2-wd-themes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.v2-wd-themes button{border-radius:20px;padding:6px 10px;font-weight:700;background:#fff;border:2px solid #f0dfba;cursor:pointer}.v2-wd-themes button.sel{background:#ffe082}.v2-wd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.v2-item{border:3px solid #f0dfba;border-radius:18px;padding:10px 6px;text-align:center;background:#fff;cursor:pointer}.v2-item.trying{border-color:#4dabf7;box-shadow:0 4px 0 #4dabf7}.v2-item.wearing{border-color:#2fbf71;box-shadow:0 4px 0 #2fbf71}.v2-item.locked{opacity:.55}.v2-item.v2-gold{border-color:#ffb703;box-shadow:0 4px 0 #ffb703}.v2-item-emoji{font-size:44px;line-height:1.1;display:block}.v2-item-name{font-weight:800;font-size:14px;display:block;margin-top:4px}.v2-item-meta{font-size:12px;font-weight:600;color:#6f675a;display:block}.v2-item-dots{display:flex;gap:4px;justify-content:center;margin:6px 0}.v2-dot{width:22px;height:22px;border-radius:50%;border:2px solid #ccc;cursor:pointer;padding:0}.v2-dot.sel{border-color:#33302a;outline:2px solid #ffb703}.v2-state{font-weight:800;font-size:13px;display:block}.v2-gold-ribbon{font-weight:800;font-size:13px;display:block;color:#b8860b}.v2-wd-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.v2-wd-actions button{flex:1;min-width:130px;border-radius:14px;padding:10px 8px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-outfits{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.v2-wd-outfits button{border-radius:20px;padding:8px 12px;font-weight:800;background:#fff8e1;border:3px solid #f0dfba;cursor:pointer}.v2-wd-box{border:3px solid #f0dfba;border-radius:18px;padding:12px;margin:10px 0;background:#fff}.v2-wd-box h4{margin:0 0 6px;font-size:16px}.v2-wd-box button{border-radius:12px;padding:8px 12px;font-weight:800;background:#ffb703;border:3px solid #f0dfba;cursor:pointer}.v2-wd-box button:disabled{opacity:.5}.v2-wd-gender{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.v2-wd-gender button{border-radius:14px;padding:8px 12px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer}.v2-wd-gender button.sel{background:#ffe082;border-color:#ffb703}.v2-level-banner{position:fixed;left:50%;transform:translateX(-50%);top:76px;z-index:950;background:#fff;border:3px solid #ffb703;border-radius:18px;padding:14px 18px;font-weight:800;box-shadow:0 6px 0 #ffb703;text-align:center;max-width:min(480px,92vw)}.v2-level-banner .v2-jump{display:inline-block;animation:v2jump .6s ease infinite alternate;font-size:44px}.@keyframes v2jump{from{transform:translateY(0)}to{transform:translateY(-14px)}}.v2-confetti{position:fixed;inset:0;z-index:960;pointer-events:none;overflow:hidden}.v2-confetti span{position:absolute;top:-30px;font-size:30px;animation:v2fall 2.6s linear forwards}.@keyframes v2fall{to{transform:translateY(110vh) rotate(360deg)}}.v2-gate{position:fixed;inset:0;z-index:10000;background:#fff6e3;overflow:auto;padding:24px 16px;text-align:center}.v2-gate .v2-gate-card{max-width:520px;margin:0 auto;background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:20px;box-shadow:0 6px 0 #f0dfba}.v2-gate button{border-radius:16px;padding:14px 18px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer;font-size:20px;margin:6px}.v2-gate button.sel{background:#ffe082;border-color:#ffb703}.v2-preview-overlay{position:fixed;inset:0;z-index:970;background:rgba(255,246,227,.97);overflow:auto;padding:18px;text-align:center}.v2-preview-overlay .v2-preview-card{max-width:520px;margin:0 auto}.v2-preview-overlay button{border-radius:14px;padding:10px 16px;font-weight:800;background:#fff;border:3px solid #f0dfba;cursor:pointer;margin:8px}@media (max-width:560px){.v2-wd-layout{flex-direction:column}.v2-wd-catbar{flex-direction:row;overflow-x:auto;width:100%;padding-bottom:4px}.v2-wd-catbar button{flex-shrink:0}.v2-doll-stage{min-height:300px}}@media (prefers-reduced-motion:reduce){.v2-level-banner .v2-jump{animation:none}.v2-confetti span{animation:none}}.v2-doll-svg{width:100%;max-width:260px;height:auto;display:block;margin:0 auto}.v2-doll-big .v2-doll-svg{max-width:340px}.v2-item-emoji{font-size:0;line-height:1;display:block}.v2-item-emoji svg{width:100%;height:84px;display:block}";
     document.head.appendChild(s);
   }
   function getProfile() {
@@ -704,7 +955,7 @@
     var mode = uiState.mode, cat = uiState.cat, theme = uiState.theme;
     var html = "<div class=\"v2-wd\"><h3>👗 Tủ đồ</h3>";
     html += "<div class=\"v2-wd-currency\">🎓 Cấp " + lvl + " · ✨ " + (profile.xp || 0) + " XP · 🪙 " + (profile.coins || 0) + " xu</div>";
-    html += "<p style=\"font-weight:700;margin:0 0 8px\">Bản xem trước tạm bằng emoji + CSS — búp bê vẽ SVG chi tiết sẽ làm ở bước cuối.</p>";
+    html += "<p style=\"font-weight:700;margin:0 0 8px\">Búp bê và trang phục đã vẽ bằng SVG theo đúng thứ tự lớp — mặc thử miễn phí, mua chỉ khi xác nhận.</p>";
     html += "<div class=\"v2-wd-gender\"><span style=\"font-weight:800\">Giới tính:</span><button type=\"button\" class=\"" + (profile.gender === "male" ? "sel" : "") + "\" data-wd=\"gender:male\">👦 Nam</button><button type=\"button\" class=\"" + (profile.gender === "female" ? "sel" : "") + "\" data-wd=\"gender:female\">👧 Nữ</button><span style=\"font-weight:800\">Tông da:</span><button type=\"button\" class=\"" + (profile.skinTone === "light" ? "sel" : "") + "\" data-wd=\"tone:light\">🏻 Sáng</button><button type=\"button\" class=\"" + (profile.skinTone === "medium" ? "sel" : "") + "\" data-wd=\"tone:medium\">🏽 Trung bình</button><button type=\"button\" class=\"" + (profile.skinTone === "dark" ? "sel" : "") + "\" data-wd=\"tone:dark\">🏿 Ngăm</button></div>";
     html += dollHTML(profile, false);
     var trySlots = Object.keys(w.tryOn);
@@ -788,7 +1039,7 @@
     GIFTS.forEach(function (g) {
       var claimed = w.giftsClaimed.indexOf(g.id) !== -1, avail = giftAvailable(profile, g.id);
       var it = ITEMS[g.item];
-      html += "<div class=\"v2-wd-box v2-gold\"><h4>🏅 " + escHtml(g.name) + " — " + escHtml(it.emoji + " " + it.name) + "</h4><p style=\"margin:4px 0;font-weight:600\">Điều kiện: " + escHtml(g.cond) + "</p>" + (claimed ? "<span style=\"font-weight:800\">✅ Đã nhận</span>" : avail ? "<button type=\"button\" data-wd=\"claim-gift:" + g.id + "\">Nhận quà</button>" : "<button type=\"button\" disabled>Chưa đủ điều kiện</button>") + "</div>";
+      html += "<div class=\"v2-wd-box v2-gold\"><h4>🏅 " + escHtml(g.name) + " — " + escHtml(it.name) + "</h4><p style=\"margin:4px 0;font-weight:600\">Điều kiện: " + escHtml(g.cond) + "</p>" + (claimed ? "<span style=\"font-weight:800\">✅ Đã nhận</span>" : avail ? "<button type=\"button\" data-wd=\"claim-gift:" + g.id + "\">Nhận quà</button>" : "<button type=\"button\" disabled>Chưa đủ điều kiện</button>") + "</div>";
     });
     html += "</div>";
     return html;
@@ -1017,7 +1268,8 @@
     setStatus: setStatus, wearSet: wearSet, buySet: buySet,
     saveOutfit: saveOutfit, applyOutfit: applyOutfit, deleteOutfit: deleteOutfit, renameOutfit: renameOutfit,
     recordAnswer: recordAnswer, effectiveEquipped: effectiveEquipped, dollHTML: dollHTML,
-    faceEmoji: faceEmoji, variantOf: variantOf
+    dollLayers: dollLayers, itemThumbSVG: itemThumbSVG,
+    faceEmoji: faceEmoji, variantOf: variantOf, colorHexOf: colorHexOf
   };
   root.__v2wardrobe = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

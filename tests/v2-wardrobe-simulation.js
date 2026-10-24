@@ -1,9 +1,9 @@
 /* Node simulation for v2 Wardrobe + gift boxes (25/10).
    Runs against the real module code (assets/data/v2-wardrobe.js),
    not a re-implementation. Not loaded by the game.
-   NOTE on placeholders: dollHTML here is the temporary emoji+CSS
-   column doll; the detailed SVG doll is the final step and is NOT
-   covered by these tests. */
+   NOTE: since the final visual step, dollHTML renders an inline
+   SVG doll (layered, back to front); the old emoji-column doll
+   is gone. Section 11-12 cover the SVG layers. */
 "use strict";
 var m = require("../assets/data/v2-wardrobe.js");
 var n = 0;
@@ -192,16 +192,18 @@ eq(kidItems.every(function (it) { return it.kids; }), true, "kids items are all 
 eq(m.categoryItems({ grade: 8, gender: "female" }, true, "dress", "").every(function (it) { return it.kind === "dress"; }), true, "dress category only dresses");
 eq(m.categoryItems({ grade: 8, gender: "female" }, true, "pants", "").every(function (it) { return it.kind !== "dress"; }), true, "pants category excludes dresses");
 
-/* 11. Doll preview (temporary emoji column): layer independence */
+/* 11. Doll preview (SVG): layer independence, dress covers shirt */
 var pd = teenProfile(1000);
 m.buyItem(pd, "hat-cap"); m.buyItem(pd, "shirt-tee"); m.buyItem(pd, "pants-long"); m.buyItem(pd, "shoes-sport");
 var html1 = m.dollHTML(pd, false);
-eq(html1.indexOf("🧢") !== -1 && html1.indexOf("👕") !== -1 && html1.indexOf("👖") !== -1 && html1.indexOf("👟") !== -1, true, "doll shows all worn layers");
+eq(html1.indexOf("<svg") !== -1, true, "doll renders inline SVG");
+eq(html1.indexOf('data-layer="hat"') !== -1 && html1.indexOf('data-layer="shirt"') !== -1 && html1.indexOf('data-layer="bottom"') !== -1 && html1.indexOf('data-layer="shoes"') !== -1, true, "doll shows all worn layers as SVG");
+eq(html1.indexOf("🧢") === -1 && html1.indexOf("👕") === -1 && html1.indexOf("👖") === -1 && html1.indexOf("👟") === -1, true, "doll no longer uses emoji clothing");
 m.unequipSlot(pd, "shirt");
 var html2 = m.dollHTML(pd, false);
-eq(html2.indexOf("👕") === -1, true, "removing shirt does not remove other layers");
-eq(html2.indexOf("🧢") !== -1 && html2.indexOf("👖") !== -1, true, "other layers survive a slot change");
-/* Dress covers the shirt row */
+eq(html2.indexOf('data-layer="shirt"') === -1, true, "removing shirt removes only the shirt layer");
+eq(html2.indexOf('data-layer="hat"') !== -1 && html2.indexOf('data-layer="bottom"') !== -1, true, "other layers survive a slot change");
+/* Dress covers the shirt layer */
 var pdr = teenProfile(1000);
 m.ensureWardrobe(pdr);
 pdr.v2wardrobe.owned.push("dress-short");
@@ -209,9 +211,53 @@ m.wearItem(pdr, "dress-short");
 pdr.v2wardrobe.owned.push("shirt-tee");
 m.wearItem(pdr, "shirt-tee");
 var html3 = m.dollHTML(pdr, false);
-eq(html3.indexOf("👗") !== -1, true, "dress shown in preview");
-eq((html3.match(/v2-doll-top/g) || []).length, 0, "dress covers the shirt row in preview");
+eq(html3.indexOf('data-layer="dress"') !== -1, true, "dress shown in preview");
+eq(html3.indexOf('data-layer="shirt"') === -1, true, "dress covers the shirt layer in preview");
 eq(m.faceEmoji({ gender: "female", skinTone: "dark" }), "👧🏿", "female dark face emoji");
 eq(m.faceEmoji({ gender: "male", skinTone: "light" }), "👦🏻", "male light face emoji");
+
+/* 12. SVG layer order, skin tones, distinct silhouettes */
+var pf = teenProfile(1000);
+m.buyItem(pf, "hair-f-long"); m.buyItem(pf, "face-round"); m.buyItem(pf, "shirt-tee"); m.buyItem(pf, "coat-wind");
+m.buyItem(pf, "pants-long"); m.buyItem(pf, "shoes-sport"); m.buyItem(pf, "hat-cap"); m.buyItem(pf, "acc-backpack");
+m.buyItem(pf, "bg-classroom"); m.buyItem(pf, "pet-cat");
+eq(m.dollLayers(pf), ["background", "pet", "back-hair", "body", "shoes", "bottom", "shirt", "coat", "front-hair", "hat", "glasses", "accessory", "foreground"], "layer order is background, pet, back-hair, body, shoes, bottom, shirt, coat, front-hair, hat, glasses, accessory, foreground");
+var htmlF = m.dollHTML(pf, false);
+var order = ["background", "pet", "back-hair", "body", "shoes", "bottom", "shirt", "coat", "front-hair", "hat", "glasses", "accessory", "foreground"];
+var positions = order.map(function (l) { return htmlF.indexOf('data-layer="' + l + '"'); });
+var ordered = positions.every(function (p, i) { return p !== -1 && (i === 0 || p > positions[i - 1]); });
+eq(ordered, true, "SVG groups appear in strict back-to-front order in the markup");
+var pDark = teenProfile(1000); pDark.skinTone = "dark";
+var pLight = teenProfile(1000); pLight.skinTone = "light";
+eq(m.dollHTML(pDark, false).indexOf("#8d5524") !== -1, true, "dark skin tone applied in SVG");
+eq(m.dollHTML(pLight, false).indexOf("#ffdfc4") !== -1, true, "light skin tone applied in SVG");
+eq(m.dollHTML(pDark, false) !== m.dollHTML(pLight, false), true, "skin tone changes the doll");
+var pHair1 = teenProfile(1000); pHair1.gender = "male"; m.buyItem(pHair1, "hair-m-short");
+var pHair2 = teenProfile(1000); pHair2.gender = "male"; m.buyItem(pHair2, "hair-m-spike");
+eq(m.dollHTML(pHair1, false) !== m.dollHTML(pHair2, false), true, "two boy hair styles draw differently");
+var pBg1 = teenProfile(1000); m.buyItem(pBg1, "bg-classroom");
+var pBg2 = teenProfile(1000); m.buyItem(pBg2, "bg-beach");
+eq(m.dollHTML(pBg1, false) !== m.dollHTML(pBg2, false), true, "classroom and beach backgrounds draw differently");
+eq(m.itemThumbSVG(pf, m.ITEMS["shirt-tee"]).indexOf("<svg") !== -1, true, "shirt tile is SVG");
+eq(m.itemThumbSVG(pf, m.ITEMS["shirt-tee"]) !== m.itemThumbSVG(pf, m.ITEMS["shirt-formal"]), true, "tee and formal shirt thumbnails differ in silhouette");
+eq(m.itemThumbSVG(pf, m.ITEMS["pet-cat"]).indexOf("<svg") !== -1, true, "pet tile is SVG");
+eq(m.dollHTML(pf, false).indexOf('data-layer="pet"') !== -1, true, "pet drawn beside the doll");
+
+/* 13. Every catalogue item renders an SVG thumbnail without error */
+var pAll = teenProfile(1000);
+var thumbOk = true, thumbCount = 0;
+Object.keys(m.ITEMS).forEach(function (id) {
+  var t = m.itemThumbSVG(pAll, m.ITEMS[id]);
+  thumbCount++;
+  if (t.indexOf("<svg") === -1 || t.indexOf("</svg>") === -1) thumbOk = false;
+});
+eq(thumbOk, true, "all catalogue items render an SVG thumbnail");
+eq(thumbCount > 70, true, "catalogue has more than 70 items rendered");
+var pMaleFull = teenProfile(1000); pMaleFull.gender = "male";
+m.buyItem(pMaleFull, "hair-m-short"); m.buyItem(pMaleFull, "shirt-formal"); m.buyItem(pMaleFull, "pants-jean"); m.buyItem(pMaleFull, "shoes-boot"); m.buyItem(pMaleFull, "hat-cap");
+eq(m.dollHTML(pMaleFull, true).indexOf("<svg") !== -1, true, "male full outfit renders big SVG preview");
+var pFemFull = teenProfile(1000); pFemFull.gender = "female";
+m.buyItem(pFemFull, "hair-f-long"); m.buyItem(pFemFull, "dress-long"); m.buyItem(pFemFull, "shoes-doll"); m.buyItem(pFemFull, "hat-wide");
+eq(m.dollHTML(pFemFull, true).indexOf('data-layer="dress"') !== -1, true, "female full dress renders big SVG preview");
 
 console.log("ALL CHECKS PASSED (" + n + " checks)");
