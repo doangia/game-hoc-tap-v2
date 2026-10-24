@@ -169,12 +169,20 @@
   }
 
   /* ---------------- Hỗ trợ viết đa thức ---------------- */
+  /* Sửa lỗi hiển thị 24/10: đề bài vẽ bằng textContent nên thẻ <sup> sẽ
+     hiện nguyên văn "x<sup>2</sup>" thay vì mũ. Dùng ký tự mũ Unicode
+     (², ³…) như phần còn lại của game, để đề, phương án, giải thích và
+     mô phỏng đều hiển thị giống nhau dù vẽ bằng text hay HTML. */
+  var SUPMAP = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+  function supUnicode(n) {
+    return String(n).split("").map(function (c) { return SUPMAP[c] || c; }).join("");
+  }
   function fmtTerm(coef, variable, power) {
     if (coef === 0) return "";
     var abs = Math.abs(coef), body;
     if (!variable) body = String(abs);
     else if (power === 1) body = (abs === 1 ? "" : String(abs)) + variable;
-    else body = (abs === 1 ? "" : String(abs)) + variable + "<sup>" + power + "</sup>";
+    else body = (abs === 1 ? "" : String(abs)) + variable + supUnicode(power);
     return (coef < 0 ? "-" : "+") + body;
   }
   function fmtPoly(c2, c1, c0) {
@@ -323,12 +331,12 @@
   function genMathDivFull() {
     var b = randInt(2, 5), k = randInt(2, 4), n = randInt(0, 2), m = n + randInt(1, 3);
     var a = b * k;
-    var sup = function (e) { return e === 0 ? "" : (e === 1 ? "x" : "x<sup>" + e + "</sup>"); };
+    var sup = function (e) { return e === 0 ? "" : (e === 1 ? "x" : "x" + supUnicode(e)); };
     var right = k + sup(m - n);
     var opts = [right, String(k), (k + 1) + sup(m - n), k + sup(m)];
     var sh = shuffleOptions(opts, 0);
     return mcq("Chia đầy đủ: (" + a + sup(m) + ") : (" + b + sup(n) + ").",
-      sh.options, sh.answer, "Chia hệ số: " + a + " : " + b + " = " + k + "; chia biến: x<sup>" + m + "</sup> : x<sup>" + n + "</sup> = x<sup>" + (m - n) + "</sup>.",
+      sh.options, sh.answer, "Chia hệ số: " + a + " : " + b + " = " + k + "; chia biến: x" + supUnicode(m) + " : x" + supUnicode(n) + " = x" + supUnicode(m - n) + ".",
       { skill: "m8-div", level: 3, topic: "m8-c1" });
   }
 
@@ -628,7 +636,7 @@
   function injectCss() {
     if (typeof document === "undefined" || document.getElementById("v2-phase2-css")) return;
     var s = document.createElement("style"); s.id = "v2-phase2-css";
-    s.textContent = ".v2-toast{background:#fff;border:3px solid #f0dfba;border-radius:14px;padding:10px 14px;font-weight:800;margin:10px 0;box-shadow:0 4px 0 #f0dfba}.v2-hint{background:#fff8e1;border:3px solid #f0dfba;border-radius:14px;padding:10px 12px;font-weight:700;margin-bottom:10px}.v2-passage{background:#fff;border:3px solid #f0dfba;border-radius:14px;padding:12px;margin-bottom:10px;line-height:1.6}.v2-overlay{position:fixed;inset:0;background:#fff8e1;z-index:9999;overflow:auto;padding:18px}.v2-overlay .v2-card{max-width:720px;margin:0 auto;background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:20px;box-shadow:0 6px 0 #f0dfba}.v2-overlay button{border-radius:14px;padding:10px 14px;font-weight:800;background:#fff;border:3px solid #f0dfba;margin:4px;cursor:pointer}.v2-overlay button.sel{background:#ffe082}.v2-overlay input[type=text],.v2-overlay textarea{width:100%;padding:10px;border:3px solid #f0dfba;border-radius:12px;font-size:16px}.v2-sim-nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.v2-sim-nav button{width:44px;padding:8px 0;text-align:center}.v2-sim-nav button.done{background:#c8e6c9}";
+    s.textContent = ".v2-toast{background:#fff;border:3px solid #f0dfba;border-radius:14px;padding:10px 14px;font-weight:800;margin:10px 0;box-shadow:0 4px 0 #f0dfba}.v2-hint{background:#fff8e1;border:3px solid #f0dfba;border-radius:14px;padding:10px 12px;font-weight:700;margin-bottom:10px}.v2-passage{background:#fff;border:3px solid #f0dfba;border-radius:14px;padding:12px;margin-bottom:10px;line-height:1.6}.v2-overlay{position:fixed;inset:0;background:#fff8e1;z-index:9999;overflow:auto;padding:18px}.v2-overlay .v2-card{max-width:720px;margin:0 auto;background:#fff;border:3px solid #f0dfba;border-radius:22px;padding:20px;box-shadow:0 6px 0 #f0dfba}.v2-overlay button{border-radius:14px;padding:10px 14px;font-weight:800;background:#fff;border:3px solid #f0dfba;margin:4px;cursor:pointer}.v2-overlay button.sel{background:#ffe082}.v2-overlay input[type=text],.v2-overlay textarea{width:100%;padding:10px;border:3px solid #f0dfba;border-radius:12px;font-size:16px}.v2-sim-nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.v2-sim-nav button{width:44px;padding:8px 0;text-align:center}.v2-sim-nav button.done{background:#c8e6c9}.v2-sim-btn{width:100%;border:3px solid #4dabf7;border-radius:14px;padding:10px 12px;background:#e3f2fd;color:#33302a;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #2f8fe8}";
     document.head.appendChild(s);
   }
   function getProfile() {
@@ -817,9 +825,14 @@
           if (text.indexOf("Chương I: Đa thức") !== -1) topicKey = "8|g8-math|m8-c1";
           if (text.indexOf("Bài 1: Câu chuyện của lịch sử") !== -1) topicKey = "8|g8-nv|nv8-b1";
           if (!topicKey || grid.querySelector('[data-v2-sim="' + topicKey + '"]')) return;
+          /* Sửa bố cục 24/10: trước đây nút mô phỏng là một .topic-card cao
+             chèn trong .topic-unit, làm ô chủ đề và nút kiến thức lệch hàng.
+             Nay là nút dải nhỏ nằm giữa thẻ chủ đề và nút kiến thức, trong
+             cùng một unit, nên các thẻ trong một hàng cao bằng nhau và nút
+             kiến thức thẳng hàng ở đáy mỗi unit. */
           var b = document.createElement("button");
-          b.className = "topic-card"; b.setAttribute("data-v2-sim", topicKey);
-          b.innerHTML = "<span class=\"t-emoji\">📝</span><span class=\"t-name\">Mô phỏng kiểm tra</span><span class=\"t-sub\">Đề riêng cho chủ đề này · có đồng hồ · nộp mới xem đáp án</span>";
+          b.className = "v2-sim-btn"; b.setAttribute("data-v2-sim", topicKey);
+          b.textContent = "📝 Mô phỏng kiểm tra — Đề riêng · có đồng hồ · nộp mới xem đáp án";
           b.addEventListener("click", function () { openSim(topicKey); });
           if (card.parentNode) card.parentNode.insertBefore(b, card.nextSibling);
         });

@@ -91,16 +91,19 @@
       .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
       .topbar h2 { font-size: clamp(24px, 6vw, 32px); margin: 0; font-weight: 800; }
       .topbar .sub { color: var(--ink-soft); font-weight: 600; font-size: 15px; }
-      .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+      .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; align-items: stretch; }
+      .topic-grid > .topic-unit { height: 100%; }
+      .topic-unit { display: flex; flex-direction: column; gap: 7px; height: 100%; }
+      .topic-unit > .topic-card { flex: 1 1 auto; width: 100%; }
       .topic-card {
         background: var(--card); border: 3px solid var(--line); border-radius: var(--radius);
         padding: 18px 12px 14px; text-align: center; box-shadow: 0 4px 0 var(--line); width: 100%;
-        transition: transform 0.12s ease;
+        transition: transform 0.12s ease; height: 100%;
       }
       .topic-card:active { transform: scale(0.96); }
       .topic-card .t-emoji { font-size: 52px; display: block; line-height: 1.15; }
       .topic-card .t-name { font-size: 19px; font-weight: 800; display: block; margin-top: 4px; line-height: 1.2; }
-      .topic-card .t-sub { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: block; margin-top: 2px; line-height: 1.3; }
+      .topic-card .t-sub { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: block; margin-top: 2px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
       .topic-card .t-letter { font-size: 40px; font-weight: 800; display: block; line-height: 1.1; color: var(--teal-dark); }
 
       /* ---------- GAME ---------- */
@@ -13945,7 +13948,7 @@ window.__ensureGrade = function (g, cb) {
   /* Các công thức cốt lõi được bổ sung dưới đây trước khi nhúng HTML. */
   var mathNotes=window.__MATH_KNOWLEDGE_NOTES||{};
   var style=document.createElement('style');style.textContent=
-    '[hidden]{display:none!important}.topic-unit{display:flex;flex-direction:column;gap:7px}.topic-unit>.topic-card{width:100%;flex:1}.knowledge-link{border:2px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--card);color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}'+
+    '[hidden]{display:none!important}.topic-grid{align-items:stretch}.topic-unit{display:flex;flex-direction:column;gap:7px;height:100%}.topic-unit>.topic-card{width:100%;flex:1 1 auto}.knowledge-link{border:2px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--card);color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}'+
     '#knowledge-dialog{border:3px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);width:min(720px,calc(100vw - 28px));max-height:85vh;padding:0}#knowledge-dialog::backdrop{background:rgba(20,20,20,.55)}.knowledge-head{position:sticky;top:0;background:var(--card);padding:15px 18px;border-bottom:2px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between}.knowledge-head h2{font-size:21px;margin:0;flex:1;min-width:0;overflow-wrap:anywhere}.knowledge-head button{flex-shrink:0}.knowledge-body{padding:16px 20px;line-height:1.65}.knowledge-body details{padding:9px 0;border-bottom:1px solid var(--line)}.knowledge-body summary{font-weight:700;cursor:pointer}.knowledge-body p{margin:8px 0}.knowledge-body table{border-collapse:collapse;width:100%;table-layout:fixed}.knowledge-body td{padding:7px;border:1px solid var(--line);overflow-wrap:anywhere}.reason-item{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:clamp(15px,3.5vw,20px);line-height:1.4;overflow-wrap:anywhere}.reason-item p{margin:6px 0}.reason-visual{max-height:230px;overflow:auto}.reason-visual .expr{font-size:clamp(18px,4vw,26px)}.reason-visual svg,.reason-visual img{max-width:100%;height:auto}.knowledge-body td .k-img{display:flex;align-items:center;justify-content:center}.knowledge-body td .k-img svg,.knowledge-body td .k-img img{height:64px;width:auto;max-width:100%;max-height:64px}.knowledge-game{display:block;margin:8px auto}';document.head.appendChild(style);
   var dialog=document.createElement('dialog');dialog.id='knowledge-dialog';dialog.setAttribute('aria-labelledby','knowledge-title');
   dialog.innerHTML='<div class="knowledge-head"><h2 id="knowledge-title"></h2><button class="knowledge-link" id="knowledge-speak" type="button">🔊 Nghe</button><button class="knowledge-link" id="knowledge-close" autofocus>Đóng</button></div><div class="knowledge-body" id="knowledge-body"></div>';document.body.appendChild(dialog);
