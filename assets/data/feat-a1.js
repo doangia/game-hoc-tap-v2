@@ -560,21 +560,17 @@
     var wd = grid.querySelector(".a1-wrong-desc"); if (wd) wd.textContent = wrongCardDesc();
     var dd = grid.querySelector(".a1-daily-desc"); if (dd) dd.textContent = dailyCardDesc();
   }
+  /* Demo v8 đã duyệt (25/10, Danh: dòng chuỗi ngày là dư thừa):
+     không còn chèn dòng "Chuỗi học / Huy hiệu" vào header nữa, vì
+     cả hai thông tin đó đã có sẵn ở header rồi — chuỗi ngày ở chip
+     icon lửa, huy hiệu ở chip góc trên bên phải — và dòng cũ còn
+     lệch số với chip lửa (feat-a1 tính theo ngày có hoạt động, v2
+     tính theo ngày hoàn thành trọn lượt). Hàm vẫn giữ tên và vẫn
+     được wrapper gọi sau renderProfileBar, nhưng không chèn gì vào
+     header nữa để không vỡ wrapper. Thông tin chuỗi/huy hiệu chi
+     tiết vẫn còn ở tab Nhiệm vụ và tab Hồ sơ, không mất đi. */
   function decorateProfileBar() {
-    var bar = el("profile-bar");
-    var pf = curProfile();
-    if (!bar || !pf) return;
-    var who = bar.querySelector(".who");
-    if (!who) return;
-    var st = computeStreak(loadActivity());
-    var earned = Object.keys(loadBadges().earned).length;
-    var line = document.createElement("div");
-    line.className = "a1-bar-extra";
-    line.textContent = st.n > 0
-      ? ("🔥 Chuỗi học: " + st.n + " ngày" + (st.today ? "" : " — học hôm nay để giữ chuỗi nhé!"))
-      : "🔥 Học hôm nay để bắt đầu chuỗi ngày học nhé!";
-    if (earned > 0) line.textContent += " • 🏅 Huy hiệu: " + earned + "/" + BADGES.length;
-    who.appendChild(line);
+    return;
   }
   function refreshA1UI() {
     try { renderProfileBar(); } catch (e) {}

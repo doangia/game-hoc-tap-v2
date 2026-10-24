@@ -95,8 +95,9 @@ has(miniBare, 'data-layer="shirt"', "RESTORE: doll with empty outfit still rende
 has(miniBare, 'data-layer="bottom"', "RESTORE: doll with empty outfit still renders pants (default outfit kept)");
 has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still renders shoes (default outfit kept)");
 var a1 = fs.readFileSync(path.join(__dirname, "..", "assets", "data", "feat-a1.js"), "utf8");
-has(a1, "học hôm nay để giữ chuỗi nhé!", "streak sentence is unchanged from the original");
-has(a1, "Huy hiệu: ", "streak area keeps its original badges mention (unchanged scope)");
+eq(a1.indexOf('who.appendChild(line)') === -1, true, "DEMO v8: feat-a1 no longer appends the duplicate streak/badges line to the header");
+has(a1, "decorateProfileBar", "decorate function still exists so the render wrapper stays safe");
+has(a1, "computeStreak", "streak data itself is untouched (still used elsewhere)");
 
 console.log(failures === 0 ? "ALL CHECKS PASSED (" + n + " checks)" : failures + " FAILURES");
 process.exit(failures === 0 ? 0 : 1);
