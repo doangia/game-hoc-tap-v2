@@ -7,15 +7,16 @@
 //      (gender select, tone toggle, logout, streak, sound, settings,
 //      stars, XP, coins, badges), with the rarely used controls moved
 //      inside the 👤 menu panel;
-//  (3) RESTORE 25/10 (user order: "completely broken, restore to the
-//      version before I asked to move info to the top-right corner"):
-//      the header matches commit 23f73f7 exactly — the top-right
-//      currency cluster is GONE and the stars / coins / badges chips
-//      sit back in the chips row under the XP bar, as 23f73f7 had
-//      them. The only intentional exception to the 23f73f7 baseline
-//      is the wardrobe default-outfit safety (doll never undressed),
-//      which lives in v2-wardrobe.js and is covered by the wardrobe
-//      tests, not by the header markup.
+//  (3) DEMO v8 25/10 (user order: "ok, thực hiện" on demo v8, after
+//      the 23f73f7 restore): stars / coins / badges move from under
+//      the XP bar to the top of a separate right column
+//      (#v2-hd-currency, pinned to the very top), with the flame /
+//      sound / settings / profile actions row 32px below it so the
+//      gap between the two rows roughly equals the gap below the
+//      lower row. The only intentional exception to the 23f73f7
+//      baseline besides this move is the wardrobe default-outfit
+//      safety (doll never undressed), which lives in v2-wardrobe.js
+//      and is covered by the wardrobe tests, not by the header markup.
 // Run: node tests/v2-header-simulation.js
 "use strict";
 var fs = require("fs"), path = require("path");
@@ -63,26 +64,28 @@ has(html, "v2-hd-lvl", "level circular badge exists");
 has(html, "v2-hd-xpbar", "thick XP bar exists");
 has(html, "v2-hd-chip", "stat chips exist");
 has(html, "/16 huy hiệu", "badges chip shows earned out of total");
-eq(html.indexOf('id="v2-hd-currency"') === -1, true, "RESTORE: top-right currency cluster is gone");
-eq(html.indexOf(".v2-hd-currency") === -1, true, "RESTORE: no currency-row CSS remains");
-eq(html.indexOf('<div class="v2-hd-chips">') !== -1, true, "RESTORE: chips row is back under the XP bar");
+has(html, 'id="v2-hd-currency"', "DEMO v8: currency container exists at the top of the right column");
+has(html, "v2-hd-right-col", "DEMO v8: separate right column exists");
+has(html, "gap: 32px", "DEMO v8: right column gap is 32px (lower actions row moved up to balance)");
+eq(html.indexOf('id="v2-hd-currency"') < html.indexOf('id="v2-header-streak"'), true, "DEMO v8: currency row comes before the actions row");
+eq(html.indexOf('<div class="v2-hd-chips">') === -1, true, "DEMO v8: no chips row under the XP bar anymore");
 has(html, "Hộp ", "next milestone unlock line exists");
 eq(html.indexOf('<label class="v2-xp" for="v2-gender-sel">Giới tính:</label>') === -1, true, "old full-width gender row is gone");
 has(shell, "v2-header-menu", "ui shell toggles the header menu");
 has(html, "max-width: 560px", "narrow-phone media query exists");
 
-/* KHÔI PHỤC 25/10 (lệnh của người dùng: vỡ hoàn toàn, khôi phục về
-   bản trước khi yêu cầu đưa thông tin lên góc trên bên phải, tức
-   commit 23f73f7): header khớp đúng 23f73f7 — vòng cấp kề khối XP,
-   số XP giữ nguyên câu đầy đủ "lên cấp", nền track thanh XP gốc
-   #f5ecd7, hàng chip sao/xu/huy hiệu nằm dưới thanh XP, câu chuỗi
-   ngày của feat-a1 giữ nguyên bản gốc. Ngoại lệ duy nhất so với
+/* DEMO v8 25/10 (Danh duyệt "ok, thực hiện"): nền 23f73f7 giữ nguyên
+   — vòng cấp kề khối XP, số XP giữ nguyên câu đầy đủ "lên cấp",
+   nền track thanh XP gốc #f5ecd7, câu chuỗi ngày của feat-a1 giữ
+   nguyên bản gốc — chỉ khác ở chỗ sao/xu/huy hiệu chuyển từ dưới
+   thanh XP lên cột phải trên cùng. Ngoại lệ duy nhất khác so với
    23f73f7 là bộ mặc định trong v2-wardrobe.js (búp bê không bao giờ
    trần), được kiểm tra ở bộ test tủ đồ. */
 var renderFn = html.slice(html.indexOf("function renderProfileBar"), html.indexOf("function renderGradeTabs"));
 eq(html.indexOf('grid-template-areas: "doll top" "level level"') === -1, true, "no 2-row grid layout from the over-broad fix");
 eq(renderFn.indexOf("v2-hd-lvl") < renderFn.indexOf("v2-hd-xpwrap"), true, "level badge sits beside the XP block in the same row");
-eq(renderFn.indexOf("v2-hd-xpwrap") < renderFn.indexOf("v2-hd-chips"), true, "RESTORE: chips row comes after the XP block, under the XP bar");
+eq(renderFn.indexOf('<div class="v2-hd-chips">') === -1, true, "DEMO v8: profile bar no longer renders a chips row under the XP bar");
+has(renderFn, 'el("v2-hd-currency")', "DEMO v8: render updates the top-right currency container");
 has(renderFn, "XP nữa lên cấp ", "XP numbers keep the full next-level phrase");
 has(html, ".v2-hd-xpbar { height: 18px; background: #f5ecd7", "RESTORE: XP bar track is the original 23f73f7 colour");
 var p3 = JSON.parse(JSON.stringify(p));

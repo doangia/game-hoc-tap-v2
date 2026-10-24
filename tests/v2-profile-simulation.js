@@ -107,10 +107,11 @@ const barHtml = els["profile-bar"].innerHTML;
 // (.v2-hd-doll, real SVG doll in the browser, emoji fallback here
 // because the wardrobe module is not loaded in this harness).
 check("profile bar avatar shows chosen fox", barHtml.includes("v2-hd-doll") && barHtml.includes("🦊"), barHtml.slice(0, 120));
-// RESTORE 25/10: back to the 23f73f7 baseline — stars/coins/badges
-// sit in the chips row under the XP bar again, inside profile-bar
-// HTML itself; the top-right currency row is gone.
-check("profile bar shows XP/level/coins", barHtml.includes("XP") && barHtml.includes("xu"), barHtml.slice(0, 300));
+// DEMO v8 25/10 (Danh duyệt): stars/coins/badges move out of the
+// profile bar into the top-right currency container, updated by the
+// same renderProfileBar call; XP/level stay in the profile bar.
+check("profile bar shows XP/level", barHtml.includes("XP"), barHtml.slice(0, 300));
+check("currency container shows coins", (els["v2-hd-currency"] && els["v2-hd-currency"].innerHTML.includes("xu")), els["v2-hd-currency"] ? els["v2-hd-currency"].innerHTML.slice(0, 200) : "missing");
 
 console.log(failures === 0 ? "ALL CHECKS PASSED" : failures + " CHECK(S) FAILED");
 process.exit(failures === 0 ? 0 : 1);
