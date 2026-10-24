@@ -490,8 +490,10 @@
           <input class="text-input" id="login-name" type="text" maxlength="30" placeholder="Ví dụ: Minh Anh" autocomplete="off" />
           <span class="field-label">Em học lớp mấy?</span>
           <div class="grade-pick" id="login-grades"><button type="button" class="grade-chip sel" data-grade="1">Lớp 1</button><button type="button" class="grade-chip" data-grade="2">Lớp 2</button><button type="button" class="grade-chip" data-grade="3">Lớp 3</button><button type="button" class="grade-chip" data-grade="4">Lớp 4</button><button type="button" class="grade-chip" data-grade="5">Lớp 5</button><button type="button" class="grade-chip" data-grade="6">Lớp 6</button><button type="button" class="grade-chip" data-grade="7">Lớp 7</button><button type="button" class="grade-chip" data-grade="8">Lớp 8</button><button type="button" class="grade-chip" data-grade="9">Lớp 9</button><button type="button" class="grade-chip" data-grade="10">Lớp 10</button><button type="button" class="grade-chip" data-grade="11">Lớp 11</button><button type="button" class="grade-chip" data-grade="12">Lớp 12</button></div>
-          <span class="field-label">Chọn nhân vật của em</span>
-          <div class="grade-pick" id="login-chars"><button type="button" class="char-chip sel" data-char="owl">🦉 Cú</button><button type="button" class="char-chip" data-char="cat">🐱 Mèo</button><button type="button" class="char-chip" data-char="fox">🦊 Cáo</button><button type="button" class="char-chip" data-char="robot">🤖 Rô-bốt</button></div>
+          <span class="field-label">Nhân vật của em là bạn nam hay bạn nữ?</span>
+          <div class="grade-pick" id="login-genders"><button type="button" class="char-chip" data-gender="male">👦 Nam</button><button type="button" class="char-chip" data-gender="female">👧 Nữ</button></div>
+          <span class="field-label">Tông da (đổi được sau trong Hồ sơ)</span>
+          <div class="grade-pick" id="login-tones"><button type="button" class="char-chip" data-tone="light">🏻 Sáng</button><button type="button" class="char-chip sel" data-tone="medium">🏽 Trung bình</button><button type="button" class="char-chip" data-tone="dark">🏿 Ngăm</button></div>
           <label class="field-label" for="login-class">Tên lớp học (không bắt buộc)</label>
           <input class="text-input" id="login-class" type="text" maxlength="10" placeholder="Ví dụ: 2A, 7B" autocomplete="off" />
           <div class="login-err" id="login-err"></div>
@@ -534,6 +536,7 @@
         </div>
         <div id="v2-tab-shop" class="v2-tab-panel" hidden>
           <div id="v2-tab-shop-inner"></div>
+          <div id="v2-wardrobe-shop"></div>
         </div>
         <div id="v2-tab-achievements" class="v2-tab-panel" hidden>
           <div id="v2-tab-achievements-inner"></div>
@@ -541,6 +544,7 @@
         </div>
         <div id="v2-tab-profile" class="v2-tab-panel" hidden>
           <div id="v2-profile-summary" class="v2-profile-summary"></div>
+          <div id="v2-wardrobe-kids"></div>
           <p class="v2-profile-note">Nhân vật, giọng và đổi người chơi ở thanh đầu trang phía trên.</p>
 <div class="panel-toggle-row">
           <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
@@ -6270,7 +6274,7 @@ window.__ensureGrade = function (g, cb) {
     function v2LevelForXp(xp){ xp = Math.max(0, Math.floor(xp || 0)); var lvl = 1; for (var i = 0; i < V2_LEVEL_XP.length; i++) { if (xp >= V2_LEVEL_XP[i]) lvl = i + 1; } if (xp >= 2700) lvl = 10 + Math.floor((xp - 2700) / 600); return lvl; }
     function v2NextLevelXp(level){ if (level < 10) return V2_LEVEL_XP[level]; return 2700 + (level - 9) * 600; }
     function v2XpProgress(xp){ var level = v2LevelForXp(xp); var cur = level < 10 ? V2_LEVEL_XP[level - 1] : 2700 + (level - 10) * 600; var next = v2NextLevelXp(level); var pct = next > cur ? Math.round(((xp || 0) - cur) * 100 / (next - cur)) : 100; return { level: level, cur: cur, next: next, pct: Math.max(0, Math.min(100, pct)) }; }
-    function v2MigrateProfile(pr){ if (!pr) return pr; if (!pr.best) pr.best = {}; if (typeof pr.totalStars !== "number") pr.totalStars = 0; if (pr.subjectXp == null) pr.subjectXp = {}; if (pr.topicPlays == null) pr.topicPlays = {}; if (pr.v2migrated) { if (typeof pr.xp !== "number") pr.xp = 0; if (typeof pr.coins !== "number") pr.coins = 0; if (!V2_CHARS[pr.character]) pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.level = v2LevelForXp(pr.xp); return pr; } pr.xp = (typeof pr.xp === "number" ? pr.xp : 0) + pr.totalStars * 10; pr.coins = (typeof pr.coins === "number" ? pr.coins : 0) + pr.totalStars; if (!V2_CHARS[pr.character]) pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.v2migrated = true; pr.level = v2LevelForXp(pr.xp); return pr; }
+    function v2MigrateProfile(pr){ if (!pr) return pr; if (!pr.best) pr.best = {}; if (typeof pr.totalStars !== "number") pr.totalStars = 0; if (pr.subjectXp == null) pr.subjectXp = {}; if (pr.topicPlays == null) pr.topicPlays = {}; if (pr.v2migrated) { if (typeof pr.xp !== "number") pr.xp = 0; if (typeof pr.coins !== "number") pr.coins = 0; if (!V2_CHARS[pr.character] && pr.character !== "human") pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.level = v2LevelForXp(pr.xp); return pr; } pr.xp = (typeof pr.xp === "number" ? pr.xp : 0) + pr.totalStars * 10; pr.coins = (typeof pr.coins === "number" ? pr.coins : 0) + pr.totalStars; if (!V2_CHARS[pr.character] && pr.character !== "human") pr.character = "owl"; if (pr.tone !== "teen" && pr.tone !== "kids") pr.tone = (pr.grade >= 6 ? "teen" : "kids"); pr.v2migrated = true; pr.level = v2LevelForXp(pr.xp); return pr; }
     function v2RoundXp(stars, playsToday){ var mult = playsToday <= 0 ? 1 : playsToday === 1 ? 0.5 : 0.25; return Math.floor((stars || 0) * 10 * mult); }
     window.__v2 = { chars: V2_CHARS, levelForXp: v2LevelForXp, nextLevelXp: v2NextLevelXp, xpProgress: v2XpProgress, migrate: v2MigrateProfile, roundXp: v2RoundXp };
     function loadProfile(){ var wasMigrated = false; try { var raw = localStorage.getItem(LS_KEY); if (raw) profile = JSON.parse(raw); } catch(e){ profile = null; } if (profile) { wasMigrated = !!profile.v2migrated; profile = v2MigrateProfile(profile); if (!wasMigrated) saveProfile(); } }
@@ -6301,13 +6305,16 @@ window.__ensureGrade = function (g, cb) {
       if (!profile) { bar.innerHTML = ""; return; }
       profile = v2MigrateProfile(profile);
       var prog = v2XpProgress(profile.xp || 0);
-      var ch = V2_CHARS[profile.character] || "🦉";
+      var __toneMod = { light: "🏻", medium: "🏽", dark: "🏿" }[profile.skinTone] || "🏽";
+      var ch = profile.gender === "female" ? ("👧" + __toneMod) : profile.gender === "male" ? ("👦" + __toneMod) : (V2_CHARS[profile.character] || "🦉");
+      if (profile.pet && V2_CHARS[profile.pet]) ch += '<span style="font-size:22px">' + V2_CHARS[profile.pet] + "</span>";
       var toneLabel = profile.tone === "teen" ? "🎓 Teen" : "🧒 Nhỏ";
-      /* v2 Phase 4: picker nhân vật chỉ hiện skin đã mua ở cửa hàng (kèm 4 nhân vật gốc). */
-      var charOpts = ""; var __charList = [["owl","🦉 Cú"],["cat","🐱 Mèo"],["fox","🦊 Cáo"],["robot","🤖 Rô-bốt"]]; var __ownedSkins = (profile.v2p34 && profile.v2p34.ownedSkins) || []; [["dragon","🐉 Rồng"],["unicorn","🦄 Kỳ lân"],["penguin","🐧 Chim cánh cụt"]].forEach(function(sc){ if (__ownedSkins.indexOf(sc[0]) !== -1) __charList.push(sc); }); __charList.forEach(function(c){ charOpts += '<option value="'+c[0]+'"'+(profile.character===c[0]?' selected':'')+'>'+c[1]+'</option>'; });
-      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-char-sel">Nhân vật:</label><select class="char-sel" id="v2-char-sel" aria-label="Chọn nhân vật">'+charOpts+'</select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
-      var sel = el("v2-char-sel");
-      if (sel) sel.addEventListener("change", function(){ if (V2_CHARS[sel.value]) { profile.character = sel.value; saveProfile(); renderProfileBar(); } });
+      /* v2 Wardrobe 25/10: nhân vật chính là người — header chỉ chọn
+         giới tính (thú cũ đã thành thú cưng, chọn trong tủ đồ). */
+      var genderOpts = '<option value="male"'+(profile.gender==="male"?' selected':'')+'>👦 Nam</option><option value="female"'+(profile.gender==="female"?' selected':'')+'>👧 Nữ</option>';
+      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-gender-sel">Giới tính:</label><select class="char-sel" id="v2-gender-sel" aria-label="Chọn giới tính nhân vật">'+genderOpts+'</select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
+      var sel = el("v2-gender-sel");
+      if (sel) sel.addEventListener("change", function(){ if (sel.value==="male"||sel.value==="female") { if (window.__v2wardrobe && window.__v2wardrobe.setGender) window.__v2wardrobe.setGender(profile, sel.value); else { profile.gender = sel.value; saveProfile(); } renderProfileBar(); } });
       var tg = el("btn-tone-toggle");
       if (tg) tg.addEventListener("click", function(){ profile.tone = (profile.tone === "teen" ? "kids" : "teen"); saveProfile(); renderProfileBar(); });
       var lo = el("btn-logout");
@@ -6396,17 +6403,24 @@ window.__ensureGrade = function (g, cb) {
     };
     /* ================= ĐĂNG NHẬP ================= */
     var loginGrade = 1;
-    var loginCharacter = "owl";
+    /* v2 Wardrobe 25/10: giới tính KHÔNG có mặc định — người chơi
+       phải tự chọn Nam hoặc Nữ; tông da mặc định Trung bình và
+       đổi được sau (không gắn với giới tính). */
+    var loginGender = null;
+    var loginTone = "medium";
     function initLogin(){
       renderGradeTabs("login-grades", loginGrade, function(g){ loginGrade = g; initLoginTabsOnly(); }, function(g){ el("login-err").textContent = "Lớp "+g+" sắp ra mắt — hiện đã có Lớp 1 đến Lớp 12 nhé!"; });
       function initLoginTabsOnly(){ renderGradeTabs("login-grades", loginGrade, function(g){ loginGrade = g; initLoginTabsOnly(); }, function(g){ el("login-err").textContent = "Lớp "+g+" sắp ra mắt — hiện đã có Lớp 1 đến Lớp 12 nhé!"; }); }
-      var charBtns = document.querySelectorAll("#login-chars .char-chip");
-      charBtns.forEach(function(b){ b.addEventListener("click", function(){ loginCharacter = b.getAttribute("data-char") || "owl"; charBtns.forEach(function(x){ x.classList.toggle("sel", x === b); }); }); });
+      var genderBtns = document.querySelectorAll("#login-genders .char-chip");
+      genderBtns.forEach(function(b){ b.addEventListener("click", function(){ loginGender = b.getAttribute("data-gender"); genderBtns.forEach(function(x){ x.classList.toggle("sel", x === b); }); }); });
+      var toneBtns = document.querySelectorAll("#login-tones .char-chip");
+      toneBtns.forEach(function(b){ b.addEventListener("click", function(){ loginTone = b.getAttribute("data-tone") || "medium"; toneBtns.forEach(function(x){ x.classList.toggle("sel", x === b); }); }); });
       el("btn-login").addEventListener("click", function(){
         var name = el("login-name").value.trim();
         if (!name) { el("login-err").textContent = "Em hãy nhập tên của mình nhé!"; el("login-name").focus(); return; }
+        if (!loginGender) { el("login-err").textContent = "Em hãy chọn Nam hoặc Nữ cho nhân vật của mình nhé!"; return; }
         var lop = el("login-class").value.trim();
-        profile = { name: name, grade: loginGrade, lop: lop, totalStars: 0, best: {}, xp: 0, coins: 0, character: loginCharacter, tone: (loginGrade >= 6 ? "teen" : "kids"), subjectXp: {}, topicPlays: {}, v2migrated: true };
+        profile = { name: name, grade: loginGrade, lop: lop, totalStars: 0, best: {}, xp: 0, coins: 0, character: "human", gender: loginGender, skinTone: loginTone, pet: null, tone: (loginGrade >= 6 ? "teen" : "kids"), subjectXp: {}, topicPlays: {}, v2migrated: true };
         // nếu đã có hồ sơ cùng tên+lớp trên máy này thì giữ lại toàn bộ hồ sơ cũ (đã chuyển đổi v2 nếu cần); nhân vật đổi sau ở thanh hồ sơ
         try { var old = localStorage.getItem(LS_KEY); if (old) { var op = v2MigrateProfile(JSON.parse(old)); if (op && op.name === name && op.grade === loginGrade) { profile = op; if (lop) profile.lop = lop; } } } catch(e){}
         profile.level = v2LevelForXp(profile.xp || 0);
@@ -14707,5 +14721,6 @@ window.__ensureGrade = function (g, cb) {
 <script src="assets/data/v2-phase2.js"></script>
   <script src="assets/data/v2-phase34.js"></script>
   <script src="assets/data/v2-ui-shell.js"></script>
+  <script src="assets/data/v2-wardrobe.js"></script>
 </body>
 </html>

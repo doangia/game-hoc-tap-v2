@@ -389,6 +389,9 @@
     for (id in SHOP) { if (SHOP[id].kind === "skin" && SHOP[id].char === charId && q.ownedSkins.indexOf(id) !== -1) ok = true; }
     if (!ok) return false;
     profile.character = charId;
+    /* Wardrobe 25/10: skin thú cũ giờ là thú cưng đi cùng nhân
+       vật người, nên mặc skin cũng đổi thú cưng hiển thị. */
+    profile.pet = charId;
     saveNow(profile);
     return true;
   }
