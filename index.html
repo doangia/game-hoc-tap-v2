@@ -393,8 +393,49 @@
         .catch-area { display: flex; flex-wrap: wrap; gap: 14px; align-content: center; justify-content: center; }
       }
     </style>
+    <style id="v2-ui-shell-css">
+      /* UI shell 24/10: header + bottom bar, bảng màu sáng đã khóa, không chế độ tối. */
+      #v2-header { position: sticky; top: 0; z-index: 900; background: var(--card); border-bottom: 3px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 8px 12px; max-width: 860px; margin: 0 auto; }
+      #v2-header #profile-bar { flex: 1; min-width: 0; }
+      #v2-header .profile-bar { margin-bottom: 0; border: none; box-shadow: none; padding: 4px 0; }
+      .v2-header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+      .v2-header-actions button { width: 46px; height: 46px; border-radius: 14px; background: #fff; border: 3px solid var(--line); font-size: 22px; cursor: pointer; }
+      .v2-header-streak { font-weight: 800; font-size: 17px; }
+      .v2-header-streak.at-risk { color: var(--coral); }
+      .v2-badge-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--coral); }
+      .v2-badge-dot[hidden] { display: none; }
+      #v2-bottombar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(860px, 100%); background: #fff; border-top: 3px solid var(--line); display: flex; gap: 4px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); z-index: 900; }
+      .v2-tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; background: #fff; border: none; border-top: 4px solid var(--line); border-radius: 12px 12px 0 0; padding: 6px 2px 4px; font-family: inherit; font-weight: 800; font-size: 13px; cursor: pointer; color: var(--ink); position: relative; }
+      .v2-tab-btn .v2-tab-icon { font-size: 26px; line-height: 1.1; }
+      .v2-tab-btn .v2-badge-dot { position: absolute; top: 4px; right: 14px; }
+      .v2-tab-btn.active { background: var(--bg-soft); }
+      .v2-tab-btn.tab-home.active { border-top-color: var(--teal); }
+      .v2-tab-btn.tab-quests.active { border-top-color: var(--coral); }
+      .v2-tab-btn.tab-shop.active { border-top-color: var(--sky); }
+      .v2-tab-btn.tab-achievements.active { border-top-color: var(--sun); }
+      .v2-tab-btn.tab-profile.active { border-top-color: var(--pink); }
+      body.v2-in-login #v2-header, body.v2-in-login #v2-bottombar, body.v2-in-game #v2-header, body.v2-in-game #v2-bottombar, body.v2-sim-open #v2-bottombar { display: none; }
+      body:not(.v2-in-login):not(.v2-in-game) .wrap { padding-bottom: 92px; }
+      #v2-p34-panels { display: none; }
+      .v2-tab-quests .v2-p34 .bar { height: 20px; }
+      .v2-tab-quests .v2-p34 button[data-p34^="claim-"] { background: var(--sun); box-shadow: 0 3px 0 var(--sun-dark); }
+      .v2-tab-shop [data-p34-panel="cards"] { border-color: #7e57c2; box-shadow: 0 4px 0 #7e57c2; }
+      .v2-tab-shop [data-p34-panel="shop"] { border-color: var(--sky); box-shadow: 0 4px 0 var(--sky); }
+      .v2-profile-summary, .v2-ghost-note { background: #fff; border: 3px solid var(--line); border-radius: 16px; padding: 12px 14px; font-weight: 700; margin-bottom: 14px; }
+      .v2-profile-note { font-weight: 600; color: var(--ink-soft); margin: 0 0 10px; }
+      .v2-game-xp { color: var(--ink-soft); }
+    </style>
   </head>
   <body>
+    <header id="v2-header">
+      <div id="profile-bar"></div>
+      <div class="v2-header-actions">
+        <span id="v2-header-streak" class="v2-header-streak">🔥 0</span>
+        <button id="v2-header-sound" type="button" aria-label="Âm thanh" title="Âm thanh">🔊</button>
+        <button id="v2-header-settings" type="button" aria-label="Cài đặt" title="Cài đặt giọng">⚙️</button>
+        <span id="v2-header-badge" class="v2-badge-dot" hidden></span>
+      </div>
+    </header>
     <div class="wrap">
 
       <!-- LOGIN -->
@@ -422,40 +463,9 @@
 
       <!-- HOME -->
       <section class="screen" id="scr-home">
-        <div id="profile-bar"></div>
-        <div class="panel-toggle-row"><button class="sound-master" id="v2-review-btn" type="button" hidden>🔁 Ôn lại câu sai</button></div>
-        <div class="panel-toggle-row">
-          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
-          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn báo lỗi câu hỏi" title="Báo lỗi" aria-expanded="false" onclick="var p=document.getElementById('report-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🚩</button>
-        </div>
-        <div class="sound-panel" id="sound-panel-home" hidden>
-          <div class="sound-head">
-            <span class="sound-title">🔊 Âm thanh</span>
-            <button class="sound-master" id="btn-test-voice" type="button">🔊 Nghe thử giọng</button>
-            <button class="sound-master" data-audio-master type="button">🔇 Tắt tất cả</button>
-          </div>
-          <div class="sound-rows">
-            <button class="sw-row on" data-audio-toggle="voice" type="button" aria-pressed="true"><span class="sw-label">🎤 Giọng nói khen</span><span class="sw-track"><span class="sw-knob"></span></span></button>
-            <button class="sw-row on" data-audio-toggle="music" type="button" aria-pressed="true"><span class="sw-label">🎵 Nhạc nền</span><span class="sw-track"><span class="sw-knob"></span></span></button>
-            <button class="sw-row on" data-audio-toggle="sfx" type="button" aria-pressed="true"><span class="sw-label">🔔 Hiệu ứng</span><span class="sw-track"><span class="sw-knob"></span></span></button>
-          </div>
-          <div class="sound-note">🎙️ Giọng đọc câu hỏi: <select id="voice-route-sel" class="route-sel" aria-label="Chọn giọng đọc câu hỏi"><option value="auto">Tự động (Edge nếu có, rồi giọng máy)</option><option value="device">Giọng của máy</option><option value="prerecorded">Thu sẵn + giọng máy cho câu hỏi</option><option value="edge">Edge (thử Edge, lỗi thì giọng máy)</option></select><br />Giọng tiếng Việt trên máy: <select id="voice-name-sel" class="route-sel" aria-label="Chọn giọng tiếng Việt trên máy"><option value="">Tự động chọn giọng tốt nhất</option></select><br />Câu cố định luôn dùng giọng nữ thu sẵn trong game; câu hỏi động dùng tuyến đã chọn.</div>
-          <div class="sound-note" id="voice-diag">Chẩn đoán giọng đọc: đang kiểm tra…</div>
-          <div class="sound-note voice-warn" id="voice-warn" hidden>⚠️ Thiết bị này chưa có giọng nói hệ thống; câu khen thu sẵn vẫn phát bình thường — phần đọc câu hỏi và nghe tiếng Anh cần máy có sẵn giọng đọc.</div>
-          <div class="sound-note">Câu khen dùng giọng nữ thu sẵn ngay trong game — máy nào cũng nghe giống nhau, không cần cài thêm giọng cho máy. Bố mẹ có thể tắt từng loại âm thanh ở đây, lựa chọn được nhớ cho lần chơi sau.</div>
-        </div>
-        <div class="sound-panel" id="report-panel-home" hidden>
-          <div class="sound-head">
-            <span class="sound-title">🚩 Báo lỗi câu hỏi</span>
-          </div>
-          <div class="sound-note">Đã ghi <b id="report-count">0</b> báo lỗi trên máy này. Khi gặp câu hỏi thiếu dữ kiện, đáp án có vẻ sai hoặc khó hiểu, em bấm nút 🚩 Báo lỗi ngay trên màn câu hỏi nhé. Báo lỗi được gửi về bảng quản trị của thầy cô, đồng thời máy này giữ một bản. Nếu lúc báo mà mất mạng nên chưa gửi được, em bấm nút 📤 Gửi các báo lỗi chưa gửi ở đây để gửi lại.</div>
-          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
-            <button class="sound-master" id="btn-report-send" type="button" hidden>📤 Gửi các báo lỗi chưa gửi (0)</button>
-            <button class="sound-master" id="btn-report-export" type="button">📄 Xuất danh sách</button>
-            <button class="sound-master" id="btn-report-clear" type="button">🗑 Xoá hết</button>
-          </div>
-        </div>
-        <div class="hello">
+        <div id="v2-tab-home" class="v2-tab-panel">
+<div class="panel-toggle-row"><button class="sound-master" id="v2-review-btn" type="button" hidden>🔁 Ôn lại câu sai</button></div>
+<div class="hello">
           <span class="mascot" aria-hidden="true">🦉</span>
           <h1>Hôm nay học gì nào?</h1>
           <p>Chọn lớp rồi chạm vào một môn để bắt đầu chơi nhé!</p>
@@ -478,9 +488,56 @@
         <p class="home-note">Nội dung bám sách Kết nối tri thức và Global Success. Mỗi lượt chơi 10 màn đan xen: trắc nghiệm, điền chỗ trống, ghép nối và trò chơi. Đúng được sao, sai được thử lại — không trừ điểm.</p>
         <!-- Dòng góp ý/báo lỗi ở footer đã ẩn trên bản fork của Danh (giữ lại code để khôi phục khi cần) -->
         <p class="contact-line" hidden>💬 Góp ý, báo lỗi: Facebook: <a href="https://fb.com/yeuemngannamhy" target="_blank" rel="noopener">fb.com/yeuemngannamhy</a> · Zalo: <a href="https://zalo.me/0977236591" target="_blank" rel="noopener">0977236591</a></p>
+              </div>
+        <div id="v2-tab-quests" class="v2-tab-panel" hidden>
+          <div id="v2-tab-quests-inner"></div>
+          <div id="v2-p34-panels"></div>
+        </div>
+        <div id="v2-tab-shop" class="v2-tab-panel" hidden>
+          <div id="v2-tab-shop-inner"></div>
+        </div>
+        <div id="v2-tab-achievements" class="v2-tab-panel" hidden>
+          <div id="v2-tab-achievements-inner"></div>
+          <div id="v2-ghost-note" class="v2-ghost-note"></div>
+        </div>
+        <div id="v2-tab-profile" class="v2-tab-panel" hidden>
+          <div id="v2-profile-summary" class="v2-profile-summary"></div>
+          <p class="v2-profile-note">Nhân vật, giọng và đổi người chơi ở thanh đầu trang phía trên.</p>
+<div class="panel-toggle-row">
+          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
+          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn báo lỗi câu hỏi" title="Báo lỗi" aria-expanded="false" onclick="var p=document.getElementById('report-panel-home'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🚩</button>
+        </div>
+<div class="sound-panel" id="sound-panel-home" hidden>
+          <div class="sound-head">
+            <span class="sound-title">🔊 Âm thanh</span>
+            <button class="sound-master" id="btn-test-voice" type="button">🔊 Nghe thử giọng</button>
+            <button class="sound-master" data-audio-master type="button">🔇 Tắt tất cả</button>
+          </div>
+          <div class="sound-rows">
+            <button class="sw-row on" data-audio-toggle="voice" type="button" aria-pressed="true"><span class="sw-label">🎤 Giọng nói khen</span><span class="sw-track"><span class="sw-knob"></span></span></button>
+            <button class="sw-row on" data-audio-toggle="music" type="button" aria-pressed="true"><span class="sw-label">🎵 Nhạc nền</span><span class="sw-track"><span class="sw-knob"></span></span></button>
+            <button class="sw-row on" data-audio-toggle="sfx" type="button" aria-pressed="true"><span class="sw-label">🔔 Hiệu ứng</span><span class="sw-track"><span class="sw-knob"></span></span></button>
+          </div>
+          <div class="sound-note">🎙️ Giọng đọc câu hỏi: <select id="voice-route-sel" class="route-sel" aria-label="Chọn giọng đọc câu hỏi"><option value="auto">Tự động (Edge nếu có, rồi giọng máy)</option><option value="device">Giọng của máy</option><option value="prerecorded">Thu sẵn + giọng máy cho câu hỏi</option><option value="edge">Edge (thử Edge, lỗi thì giọng máy)</option></select><br />Giọng tiếng Việt trên máy: <select id="voice-name-sel" class="route-sel" aria-label="Chọn giọng tiếng Việt trên máy"><option value="">Tự động chọn giọng tốt nhất</option></select><br />Câu cố định luôn dùng giọng nữ thu sẵn trong game; câu hỏi động dùng tuyến đã chọn.</div>
+          <div class="sound-note" id="voice-diag">Chẩn đoán giọng đọc: đang kiểm tra…</div>
+          <div class="sound-note voice-warn" id="voice-warn" hidden>⚠️ Thiết bị này chưa có giọng nói hệ thống; câu khen thu sẵn vẫn phát bình thường — phần đọc câu hỏi và nghe tiếng Anh cần máy có sẵn giọng đọc.</div>
+          <div class="sound-note">Câu khen dùng giọng nữ thu sẵn ngay trong game — máy nào cũng nghe giống nhau, không cần cài thêm giọng cho máy. Bố mẹ có thể tắt từng loại âm thanh ở đây, lựa chọn được nhớ cho lần chơi sau.</div>
+        </div>
+<div class="sound-panel" id="report-panel-home" hidden>
+          <div class="sound-head">
+            <span class="sound-title">🚩 Báo lỗi câu hỏi</span>
+          </div>
+          <div class="sound-note">Đã ghi <b id="report-count">0</b> báo lỗi trên máy này. Khi gặp câu hỏi thiếu dữ kiện, đáp án có vẻ sai hoặc khó hiểu, em bấm nút 🚩 Báo lỗi ngay trên màn câu hỏi nhé. Báo lỗi được gửi về bảng quản trị của thầy cô, đồng thời máy này giữ một bản. Nếu lúc báo mà mất mạng nên chưa gửi được, em bấm nút 📤 Gửi các báo lỗi chưa gửi ở đây để gửi lại.</div>
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button class="sound-master" id="btn-report-send" type="button" hidden>📤 Gửi các báo lỗi chưa gửi (0)</button>
+            <button class="sound-master" id="btn-report-export" type="button">📄 Xuất danh sách</button>
+            <button class="sound-master" id="btn-report-clear" type="button">🗑 Xoá hết</button>
+          </div>
+        </div>
+        </div>
       </section>
 
-      <!-- CHUYÊN ĐỀ NÂNG CAO (đợt thử Toán tư duy) — nội dung do assets/data/chuyende.js dựng -->
+<!-- CHUYÊN ĐỀ NÂNG CAO (đợt thử Toán tư duy) — nội dung do assets/data/chuyende.js dựng -->
       <section class="screen" id="scr-chuyende">
         <div class="topbar">
           <button class="back-btn" id="btn-cd-back" aria-label="Quay lại">⬅️</button>
@@ -524,6 +581,7 @@
             <div class="progress-meta">
               <span id="q-counter">Câu 1/10</span>
               <span class="stars-now">⭐ <span id="stars-now">0</span></span>
+              <span class="v2-game-xp" id="v2-game-xp"></span>
             </div>
             <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
           </div>
@@ -570,6 +628,13 @@
       </section>
 
     </div>
+    <nav id="v2-bottombar" aria-label="Điều hướng chính">
+      <button type="button" class="v2-tab-btn tab-home active" data-v2-tab="home"><span class="v2-tab-icon">🏠</span><span class="v2-tab-label">Học</span></button>
+      <button type="button" class="v2-tab-btn tab-quests" data-v2-tab="quests"><span class="v2-tab-icon">🎯</span><span class="v2-tab-label">Nhiệm vụ</span><span id="v2-tab-dot-quests" class="v2-badge-dot" hidden></span></button>
+      <button type="button" class="v2-tab-btn tab-shop" data-v2-tab="shop"><span class="v2-tab-icon">🛍️</span><span class="v2-tab-label">Cửa hàng</span></button>
+      <button type="button" class="v2-tab-btn tab-achievements" data-v2-tab="achievements"><span class="v2-tab-icon">🏅</span><span class="v2-tab-label">Thành tích</span></button>
+      <button type="button" class="v2-tab-btn tab-profile" data-v2-tab="profile"><span class="v2-tab-icon">👤</span><span class="v2-tab-label">Hồ sơ</span></button>
+    </nav>
     <script>
     "use strict";
     /* ================= Helpers ================= */
@@ -14585,5 +14650,6 @@ window.__ensureGrade = function (g, cb) {
 </script>
 <script src="assets/data/v2-phase2.js"></script>
   <script src="assets/data/v2-phase34.js"></script>
+  <script src="assets/data/v2-ui-shell.js"></script>
 </body>
 </html>

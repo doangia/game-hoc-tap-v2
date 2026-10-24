@@ -466,9 +466,18 @@
       if (!bar || !bar.parentNode) return;
       host = document.createElement("div"); host.id = "v2-p34-panels";
       bar.parentNode.insertBefore(host, bar.nextSibling);
-      host.addEventListener("click", function (ev) {
-        var t = ev.target && ev.target.getAttribute ? ev.target.getAttribute("data-p34") : null;
-        if (!t) return;
+    }
+    /* Sửa UI shell 24/10: listener nhiệm vụ/cửa hàng gắn ở document thay
+       vì ở host, vì shell di chuyển (move node) từng panel ra khỏi host
+       vào các tab Nhiệm vụ/Cửa hàng/Thành tích. Gắn ở host thì nút sau
+       khi di chuyển sẽ mất listener và bấm không có tác dụng. Dùng
+       closest để bấm vào phần tử con trong nút vẫn tính. */
+    if (typeof document !== "undefined" && !document.__p34DocListener) {
+      document.__p34DocListener = true;
+      document.addEventListener("click", function (ev) {
+        var el = ev.target && ev.target.closest ? ev.target.closest("[data-p34]") : null;
+        if (!el) return;
+        var t = el.getAttribute("data-p34");
         var p = getProfile(); if (!p) return;
         var r = null;
         if (t === "claim-rounds") r = claimDaily(p, "rounds");
@@ -492,27 +501,27 @@
     var bestStars = 0, k;
     if (prof.best) for (k in prof.best) if (prof.best[k] > bestStars) bestStars = prof.best[k];
     var html = "";
-    html += "<div class=\"v2-p34\"><h3>🎯 Nhiệm vụ hôm nay</h3>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"daily\"><h3>🎯 Nhiệm vụ hôm nay</h3>";
     html += questRow("Hoàn thành 1 lượt chơi", qs.rounds.p, 1, qs.rounds.claimed, "claim-rounds");
     html += questRow("Hoàn thành 1 lượt ôn lại câu sai", qs.review.p, 1, qs.review.claimed, "claim-review");
     html += questRow("Kiếm 8 sao đúng lần đầu trong ngày", qs.stars.p, 8, qs.stars.claimed, "claim-stars");
     html += "<p style=\"margin:6px 0\">Nhiệm vụ chỉ tính lượt chơi và lượt ôn đã hoàn thành, không tính chỉ mở game hay bấm nút. Sao nhiệm vụ mỗi chủ đề trong ngày chỉ tính lượt đầu tiên.</p></div>";
-    html += "<div class=\"v2-p34\"><h3>📅 Nhiệm vụ tuần</h3>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"weekly\"><h3>📅 Nhiệm vụ tuần</h3>";
     html += questRow("Chơi 5 ngày khác nhau trong tuần, hoặc làm chủ 1 kĩ năng", (qs.weekly.days.length >= 5 || qs.weekly.masteredThisWeek) ? 1 : 0, 1, qs.weekly.claimed, "claim-weekly");
     html += "<p style=\"margin:6px 0\">Đã chơi " + qs.weekly.days.length + " ngày trong tuần này · Thưởng: 30 xu.</p></div>";
     if (qs.weakness.skills && qs.weakness.skills.length) {
-      html += "<div class=\"v2-p34\"><h3>🎯 Nhiệm vụ ôn điểm yếu</h3><p style=\"margin:6px 0\">Ôn các kĩ năng: " + qs.weakness.skills.map(skillName).map(escHtml).join(" · ") + "</p>";
+      html += "<div class=\"v2-p34\" data-p34-panel=\"weakness\"><h3>🎯 Nhiệm vụ ôn điểm yếu</h3><p style=\"margin:6px 0\">Ôn các kĩ năng: " + qs.weakness.skills.map(skillName).map(escHtml).join(" · ") + "</p>";
       html += questRow("Hoàn thành 1 lượt ôn điểm yếu", qs.weakness.p, 1, qs.weakness.claimed, "claim-weakness") + "</div>";
     }
-    html += "<div class=\"v2-p34\"><h3>🔥 Chuỗi ngày học</h3><p style=\"margin:6px 0\">Chuỗi hiện tại: <b>" + s.current + " ngày</b> · Tốt nhất: <b>" + s.best + " ngày</b> · Đóng băng đang giữ: " + s.freezes + "/2 (30 xu/cái, mua trước ngày nghỉ, bảo vệ đúng 1 ngày vắng).</p>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"streak\"><h3>🔥 Chuỗi ngày học</h3><p style=\"margin:6px 0\">Chuỗi hiện tại: <b>" + s.current + " ngày</b> · Tốt nhất: <b>" + s.best + " ngày</b> · Đóng băng đang giữ: " + s.freezes + "/2 (30 xu/cái, mua trước ngày nghỉ, bảo vệ đúng 1 ngày vắng).</p>";
     html += "<p style=\"margin:6px 0\">👻 So với chính bạn: chuỗi tốt nhất " + s.best + " ngày · sao tốt nhất " + bestStars + " sao/lượt. Không có bảng xếp hạng với người khác.</p>";
     if (s.lost && s.recoveryDay) html += "<p style=\"margin:6px 0\">⚠️ Chuỗi " + s.lost + " ngày vừa bị đứt. Hoàn thành 3 lượt ôn trong hôm nay (trong 3 ngày sau khi đứt, 1 lần/30 ngày) để khôi phục.</p>";
     html += "<div class=\"qrow\"><button type=\"button\" data-p34=\"buy-freeze\">❄️ Mua đóng băng (30 xu)</button></div></div>";
-    html += "<div class=\"v2-p34\"><h3>🏅 Thành tích</h3><p style=\"margin:6px 0\">" + Object.keys(ACHIEVEMENTS).map(function (id) {
+    html += "<div class=\"v2-p34\" data-p34-panel=\"achievements\"><h3>🏅 Thành tích</h3><p style=\"margin:6px 0\">" + Object.keys(ACHIEVEMENTS).map(function (id) {
       var got = q.achievements.indexOf(id) !== -1;
       return (got ? "✅ " : "☐ ") + escHtml(ACHIEVEMENTS[id].name);
     }).join(" · ") + "</p><p style=\"margin:6px 0\">Thành tích chỉ để ghi nhận, không tự sinh XP hay xu khi mở lại.</p></div>";
-    html += "<div class=\"v2-p34\"><h3>🛍️ Cửa hàng — chỉ bằng xu học được, không tiền thật</h3><p style=\"margin:6px 0\">Xu hiện có: <b>" + (prof.coins || 0) + "</b> · Trợ giúp: loại đáp án còn " + q.helpers.eliminate + ", gợi ý còn " + q.helpers.hint + " (tối đa 2 cái/lượt, cấm trong mô phỏng kiểm tra).</p>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"shop\"><h3>🛍️ Cửa hàng — chỉ bằng xu học được, không tiền thật</h3><p style=\"margin:6px 0\">Xu hiện có: <b>" + (prof.coins || 0) + "</b> · Trợ giúp: loại đáp án còn " + q.helpers.eliminate + ", gợi ý còn " + q.helpers.hint + " (tối đa 2 cái/lượt, cấm trong mô phỏng kiểm tra).</p>";
     Object.keys(SHOP).forEach(function (id) {
       var it = SHOP[id];
       if (it.kind === "helper") {
@@ -529,7 +538,7 @@
       }
     });
     html += "<div class=\"qrow\"><button type=\"button\" data-p34=\"frame-none\">Bỏ khung avatar</button></div></div>";
-    html += "<div class=\"v2-p34\"><h3>🃏 Bộ sưu tập thẻ kiến thức</h3><p style=\"margin:6px 0\">" + (q.cards.length ? q.cards.map(function (c) { return "🃏 <b>" + escHtml(c.name) + "</b> — " + escHtml(c.line); }).join("<br>") : "Chưa có thẻ nào. Làm chủ một kĩ năng (đúng lần đầu >= 80% trong 10 câu gần nhất, đã lên mức 3) để nhận thẻ.") + "</p></div>";
+    html += "<div class=\"v2-p34\" data-p34-panel=\"cards\"><h3>🃏 Bộ sưu tập thẻ kiến thức</h3><p style=\"margin:6px 0\">" + (q.cards.length ? q.cards.map(function (c) { return "🃏 <b>" + escHtml(c.name) + "</b> — " + escHtml(c.line); }).join("<br>") : "Chưa có thẻ nào. Làm chủ một kĩ năng (đúng lần đầu >= 80% trong 10 câu gần nhất, đã lên mức 3) để nhận thẻ.") + "</p></div>";
     host.innerHTML = html;
     applyFrame();
     renderHelperButtons();
