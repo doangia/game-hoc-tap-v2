@@ -459,7 +459,7 @@
     if (typeof document === "undefined") return;
     var prof = getProfile();
     var host = document.getElementById("v2-p34-panels");
-    if (!prof || !isTeen(prof)) { if (host) host.innerHTML = ""; applyFrame(); return; }
+    if (!prof || !isTeen(prof)) { if (host) host.innerHTML = ""; applyFrame(); renderHelperButtons(); return; }
     injectCss();
     if (!host) {
       var bar = document.getElementById("profile-bar");
@@ -554,22 +554,38 @@
     if (q.frame === "frame-gold") av.classList.add("v2-frame-gold");
     else if (q.frame === "frame-star") av.classList.add("v2-frame-star");
   }
+  /* Nút âm thanh dùng chung cho thanh công cụ (lớp 6-12: icon thứ ba sau
+     🔍 💡; lớp 1-5: icon duy nhất trong thanh tối giản). Bấm vào vẫn ẩn/hiện
+     đúng panel #sound-panel-game như nút riêng cũ ở màn chơi, chỉ đổi chỗ. */
+  function soundButtonHtml() {
+    return "<button type=\"button\" data-sound=\"1\" aria-label=\"Âm thanh — thiết lập giọng, nhạc, hiệu ứng\" data-tip=\"Âm thanh — thiết lập giọng, nhạc, hiệu ứng\" aria-expanded=\"false\">🔊</button>";
+  }
   function renderHelperButtons() {
     if (typeof document === "undefined") return;
     var card = document.getElementById("q-card");
     var old = document.getElementById("v2-helper-row");
     var prof = getProfile();
-    var show = !!prof && isTeen(prof) && !document.getElementById("v2-sim-overlay") && card && document.getElementById("scr-game") && document.getElementById("scr-game").classList.contains("on");
+    /* Sửa 24/10 (gộp nút loa màn chơi + đính chính thẻ lớn): thanh công cụ
+       vẽ trong màn chơi khi không có overlay mô phỏng, KHÔNG còn giới hạn
+       lớp 6-12 nữa — lớp 1-5 vẽ thanh tối giản chỉ có icon âm thanh (xem
+       nhánh dưới), để không mất nút âm thanh khi bỏ hàng riêng ở màn chơi.
+       Mô phỏng kiểm tra vẫn không có thanh này (giữ nguyên như trước). */
+    var show = !!prof && !document.getElementById("v2-sim-overlay") && card && document.getElementById("scr-game") && document.getElementById("scr-game").classList.contains("on");
     if (!show) { if (old) old.remove(); return; }
     if (!old) {
       old = document.createElement("div"); old.id = "v2-helper-row"; old.className = "v2-helper-row";
-      /* Làm rõ 24/10: nút nghe giờ nằm trong khung đề riêng #q-stem, nên thanh
-         công cụ không chèn sau nút nghe nữa (sẽ lọt vào trong khung đề) mà
-         chèn ngay sau khung đề, giữa khung đề và các phương án. */
+      /* Thanh công cụ chèn ngay sau khung đề #q-stem, giữa khung đề và các
+         phương án, bên trong thẻ lớn #q-card đã khôi phục. */
       var stem = document.getElementById("q-stem");
       if (stem && stem.parentNode) stem.parentNode.insertBefore(old, stem.nextSibling);
       else card.appendChild(old);
       old.addEventListener("click", function (ev) {
+        var s = ev.target && ev.target.closest ? ev.target.closest("[data-sound]") : null;
+        if (s) {
+          var panel = document.getElementById("sound-panel-game");
+          if (panel) { panel.hidden = !panel.hidden; s.setAttribute("aria-expanded", String(!panel.hidden)); }
+          return;
+        }
         var b = ev.target && ev.target.closest ? ev.target.closest("[data-helper]") : null;
         if (!b) return;
         var p = getProfile(); if (!p) return;
@@ -577,6 +593,12 @@
         if (!r.ok) alert("Chưa dùng được trợ giúp: " + r.reason + ".");
         renderHelperButtons();
       });
+    }
+    /* Lớp 1-5: KHÔNG gọi ensureV2P34 (hàm đó sẽ tạo v2p34 vào hồ sơ trẻ em,
+       vốn phải giữ sạch như trước) — chỉ vẽ icon âm thanh, không trợ giúp. */
+    if (!isTeen(prof)) {
+      old.innerHTML = soundButtonHtml() + "<span class=\"v2-helper-note\">Âm thanh</span>";
+      return;
     }
     var q = ensureV2P34(prof);
     /* Sửa 24/10 (theo yêu cầu Danh): thanh công cụ gọn chỉ còn icon; chú giải đầy đủ
@@ -589,7 +611,7 @@
     var used = helpersUsed();
     var elDis = (used >= 2 || q.helpers.eliminate <= 0) ? " disabled" : "";
     var hintDis = (used >= 2 || q.helpers.hint <= 0) ? " disabled" : "";
-    old.innerHTML = "<button type=\"button\" data-helper=\"eliminate\" aria-label=\"Loại 1 đáp án sai, còn " + q.helpers.eliminate + "\" data-tip=\"Loại 1 đáp án sai — còn " + q.helpers.eliminate + "\"" + elDis + ">🔍</button><button type=\"button\" data-helper=\"hint\" aria-label=\"Gợi ý từng bước, còn " + q.helpers.hint + "\" data-tip=\"Gợi ý từng bước — còn " + q.helpers.hint + "\"" + hintDis + ">💡</button><span class=\"v2-helper-note\">🔍 " + q.helpers.eliminate + " · 💡 " + q.helpers.hint + " · đã dùng " + used + "/2</span>";
+    old.innerHTML = "<button type=\"button\" data-helper=\"eliminate\" aria-label=\"Loại 1 đáp án sai, còn " + q.helpers.eliminate + "\" data-tip=\"Loại 1 đáp án sai — còn " + q.helpers.eliminate + "\"" + elDis + ">🔍</button><button type=\"button\" data-helper=\"hint\" aria-label=\"Gợi ý từng bước, còn " + q.helpers.hint + "\" data-tip=\"Gợi ý từng bước — còn " + q.helpers.hint + "\"" + hintDis + ">💡</button>" + soundButtonHtml() + "<span class=\"v2-helper-note\">🔍 " + q.helpers.eliminate + " · 💡 " + q.helpers.hint + " · đã dùng " + used + "/2</span>";
   }
   var pendingReview = null;
   function initUi() {

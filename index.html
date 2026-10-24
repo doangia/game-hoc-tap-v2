@@ -113,16 +113,22 @@
       .progress-meta .stars-now { color: var(--sun-dark); }
       .progress-bar { height: 20px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 3px solid var(--line); }
       .progress-fill { height: 100%; width: 0%; background: var(--leaf); border-radius: 999px; transition: width 0.4s ease; }
-      /* Làm rõ 24/10 (theo yêu cầu Danh): box lớn bao toàn bộ thẻ câu hỏi
-         BỊ BỎ — #q-card giờ trong suốt, không nền, không viền dashed, không
-         bóng đổ, chỉ giữ padding/vị trí để bố cục không xô lệch. Khung riêng
-         chỉ bao phần câu hỏi là #q-stem (huy hiệu + đề bài + nút nghe) ở dưới. */
+      /* Sửa lại 24/10 theo yêu cầu làm rõ của Danh (đính chính a251b78):
+         KHÔI PHỤC thẻ lớn #q-card như ảnh mẫu: một thẻ duy nhất nền trắng,
+         viền liền, bo góc lớn, bóng đổ nhẹ, bao toàn bộ cụm câu hỏi
+         (khung đề, thanh công cụ, phương án, nút xem lại kiến thức).
+         Sau đó mới thêm các box con BÊN TRONG thẻ lớn này, không phá thẻ lớn.
+         overflow: visible (khác bản gốc hidden) để tooltip của thanh công
+         cụ không bị cắt. */
       .q-card {
-        background: transparent; border: none;
-        box-shadow: none; padding: 22px 18px 24px; text-align: center; position: relative; overflow: visible;
+        background: var(--card); border: 3px solid var(--line); border-radius: 30px;
+        box-shadow: var(--shadow); padding: 22px 18px 24px; text-align: center; position: relative; overflow: visible;
       }
+      /* Box con cho phần câu hỏi, nằm trong thẻ lớn: nền xanh nhạt + viền
+         dashed như commit 1035ffe, nhưng lần này là box con, không phải
+         box duy nhất; nền trắng của thẻ lớn vẫn bao quanh nó. */
       .q-stem {
-        position: relative; background: #ffffff; border: 3px dashed var(--sky);
+        position: relative; background: #e8f3ff; border: 3px dashed var(--sky);
         border-radius: 22px; padding: 18px 18px 16px; margin: 0 0 12px; text-align: center;
       }
       .q-stem .q-prompt { padding-right: 56px; margin: 0; }
@@ -605,9 +611,11 @@
             <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
           </div>
         </div>
-        <div class="panel-toggle-row">
-          <button class="panel-toggle" type="button" aria-label="Hiện hoặc ẩn thiết lập âm thanh" title="Âm thanh" aria-expanded="false" onclick="var p=document.getElementById('sound-panel-game'); p.hidden=!p.hidden; this.setAttribute('aria-expanded', String(!p.hidden));">🔊</button>
-        </div>
+        <!-- Sửa 24/10 theo quyết định Danh duyệt: nút loa màn chơi đứng lẻ
+             loi ở hàng riêng này đã BỎ; nút âm thanh giờ nằm trong thanh
+             công cụ #v2-helper-row (xem v2-phase34.js, kể cả thanh tối giản
+             chỉ có icon âm thanh cho lớp 1-5). Panel dưới đây giữ nguyên,
+             chỉ đổi nút mở nó. -->
         <div class="sound-panel compact" id="sound-panel-game" hidden>
           <div class="sound-head">
             <span class="sound-title">🔊 Âm thanh</span>
