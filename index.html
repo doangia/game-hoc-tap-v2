@@ -6141,7 +6141,7 @@ window.__ensureGrade = function (g, cb) {
        Chi them ho so va hien thi; khong doi luat sao, luat choi hay ngan hang cau.
        Chuyen doi v1->v2: 10 XP va 1 xu cho moi sao cu, lam MOT lan duy nhat
        nho co v2migrated (xem V2-PHASE0.md muc 5). Cap luon tinh lai tu XP. */
-    var V2_CHARS = { owl: "🦉", cat: "🐱", fox: "🦊", robot: "🤖" };
+    var V2_CHARS = { owl: "🦉", cat: "🐱", fox: "🦊", robot: "🤖", dragon: "🐉", unicorn: "🦄", penguin: "🐧" }; /* v2 Phase 4: skin mua ở cửa hàng, chỉ hiện trong picker khi đã sở hữu */
     var V2_LEVEL_XP = [0, 100, 250, 450, 700, 1000, 1350, 1750, 2200, 2700];
     function v2LevelForXp(xp){ xp = Math.max(0, Math.floor(xp || 0)); var lvl = 1; for (var i = 0; i < V2_LEVEL_XP.length; i++) { if (xp >= V2_LEVEL_XP[i]) lvl = i + 1; } if (xp >= 2700) lvl = 10 + Math.floor((xp - 2700) / 600); return lvl; }
     function v2NextLevelXp(level){ if (level < 10) return V2_LEVEL_XP[level]; return 2700 + (level - 9) * 600; }
@@ -6179,7 +6179,9 @@ window.__ensureGrade = function (g, cb) {
       var prog = v2XpProgress(profile.xp || 0);
       var ch = V2_CHARS[profile.character] || "🦉";
       var toneLabel = profile.tone === "teen" ? "🎓 Teen" : "🧒 Nhỏ";
-      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-char-sel">Nhân vật:</label><select class="char-sel" id="v2-char-sel" aria-label="Chọn nhân vật"><option value="owl"'+(profile.character==="owl"?" selected":"")+'>🦉 Cú</option><option value="cat"'+(profile.character==="cat"?" selected":"")+'>🐱 Mèo</option><option value="fox"'+(profile.character==="fox"?" selected":"")+'>🦊 Cáo</option><option value="robot"'+(profile.character==="robot"?" selected":"")+'>🤖 Rô-bốt</option></select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
+      /* v2 Phase 4: picker nhân vật chỉ hiện skin đã mua ở cửa hàng (kèm 4 nhân vật gốc). */
+      var charOpts = ""; var __charList = [["owl","🦉 Cú"],["cat","🐱 Mèo"],["fox","🦊 Cáo"],["robot","🤖 Rô-bốt"]]; var __ownedSkins = (profile.v2p34 && profile.v2p34.ownedSkins) || []; [["dragon","🐉 Rồng"],["unicorn","🦄 Kỳ lân"],["penguin","🐧 Chim cánh cụt"]].forEach(function(sc){ if (__ownedSkins.indexOf(sc[0]) !== -1) __charList.push(sc); }); __charList.forEach(function(c){ charOpts += '<option value="'+c[0]+'"'+(profile.character===c[0]?' selected':'')+'>'+c[1]+'</option>'; });
+      bar.innerHTML = '<div class="profile-bar"><span class="avatar">'+ch+'</span><div class="who"><div class="nm">'+profile.name+'</div><div class="cl">Lớp '+profile.grade+(profile.lop? " • Lớp học "+profile.lop : "")+' • '+toneLabel+'</div></div><span class="total">⭐ Tổng sao: '+(profile.totalStars||0)+'</span><span class="v2-xp">Cấp '+prog.level+' · '+(profile.xp||0)+' XP · 🪙 '+(profile.coins||0)+' xu</span><div class="xp-bar"><div class="xp-fill" style="width:'+prog.pct+'%"></div></div><label class="v2-xp" for="v2-char-sel">Nhân vật:</label><select class="char-sel" id="v2-char-sel" aria-label="Chọn nhân vật">'+charOpts+'</select><button class="small-btn" id="btn-tone-toggle">'+(profile.tone==="teen"?"🧒 Giọng nhỏ":"🎓 Giọng teen")+'</button><button class="small-btn" id="btn-logout">Đổi người chơi</button></div>';
       var sel = el("v2-char-sel");
       if (sel) sel.addEventListener("change", function(){ if (V2_CHARS[sel.value]) { profile.character = sel.value; saveProfile(); renderProfileBar(); } });
       var tg = el("btn-tone-toggle");
@@ -14579,5 +14581,6 @@ window.__ensureGrade = function (g, cb) {
 
 </script>
 <script src="assets/data/v2-phase2.js"></script>
+  <script src="assets/data/v2-phase34.js"></script>
 </body>
 </html>
