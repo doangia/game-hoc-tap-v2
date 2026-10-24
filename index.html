@@ -113,14 +113,19 @@
       .progress-meta .stars-now { color: var(--sun-dark); }
       .progress-bar { height: 20px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 3px solid var(--line); }
       .progress-fill { height: 100%; width: 0%; background: var(--leaf); border-radius: 999px; transition: width 0.4s ease; }
-      /* Sửa 24/10 (theo yêu cầu Danh): khung câu hỏi thành box riêng rõ rệt —
-         nền xanh nhạt khác nền trang (#fff6e3) và thẻ trắng khác, viền dashed
-         thay vì viền liền; vẫn bảng màu sáng, chữ vẫn mực tối đọc rõ. */
+      /* Làm rõ 24/10 (theo yêu cầu Danh): box lớn bao toàn bộ thẻ câu hỏi
+         BỊ BỎ — #q-card giờ trong suốt, không nền, không viền dashed, không
+         bóng đổ, chỉ giữ padding/vị trí để bố cục không xô lệch. Khung riêng
+         chỉ bao phần câu hỏi là #q-stem (huy hiệu + đề bài + nút nghe) ở dưới. */
       .q-card {
-        background: #e8f3ff; border: 3px dashed var(--sky); border-radius: 30px;
-        box-shadow: var(--shadow); padding: 22px 18px 24px; text-align: center; position: relative; overflow: hidden;
+        background: transparent; border: none;
+        box-shadow: none; padding: 22px 18px 24px; text-align: center; position: relative; overflow: visible;
       }
-      .q-card .q-prompt { padding-right: 56px; }
+      .q-stem {
+        position: relative; background: #ffffff; border: 3px dashed var(--sky);
+        border-radius: 22px; padding: 18px 18px 16px; margin: 0 0 12px; text-align: center;
+      }
+      .q-stem .q-prompt { padding-right: 56px; margin: 0; }
       .q-card.shake { animation: shake 0.4s ease; }
       @keyframes shake { 0%,100% { transform: none; } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
       .q-prompt { font-size: clamp(23px, 6vw, 31px); font-weight: 800; line-height: 1.3; margin: 0 0 6px; }
@@ -615,9 +620,11 @@
           </div>
         </div>
         <div class="q-card" id="q-card">
-          <div class="q-badge" id="q-badge"></div>
-          <p class="q-prompt" id="q-prompt"></p>
-          <button id="q-speak-btn" class="q-speak-btn" type="button" aria-label="Nghe câu hỏi" title="Nghe câu hỏi">🔊</button>
+          <div class="q-stem" id="q-stem">
+            <div class="q-badge" id="q-badge"></div>
+            <p class="q-prompt" id="q-prompt"></p>
+            <button id="q-speak-btn" class="q-speak-btn" type="button" aria-label="Nghe câu hỏi" title="Nghe câu hỏi">🔊</button>
+          </div>
           <button id="q-report-btn" class="q-report-btn" type="button" title="Báo câu hỏi có vấn đề" hidden>🚩 Báo lỗi</button>
           <div class="q-visual" id="q-visual"></div>
           <div class="options" id="q-options"></div>
@@ -2571,10 +2578,10 @@
     (function () {
       var st = document.createElement("style");
       st.textContent =
-        /* Sửa 24/10 (theo yêu cầu Danh): nút nghe chỉ còn icon, nằm góc trên bên phải
-           trong #q-card (đã có position:relative); đề bài đã chừa padding-right 56px
-           nên icon không che đề, và nó nằm trong thẻ nên không che nút quay lại hay
-           thanh tiến độ ngoài thẻ. Chức năng đọc giữ nguyên, chỉ đổi hiển thị. */
+        /* Làm rõ 24/10 (theo yêu cầu Danh): nút nghe chỉ còn icon, nằm góc trên bên phải
+           trong khung đề riêng #q-stem (đã có position:relative); đề bài đã chừa
+           padding-right 56px nên icon không che đề, và nó nằm trong khung đề nên không
+           che nút quay lại hay thanh tiến độ ngoài thẻ. Chức năng đọc giữ nguyên. */
         ".q-speak-btn{position:absolute;top:12px;right:12px;width:46px;height:46px;padding:0;font-size:22px;line-height:1;border-radius:50%;border:3px solid var(--line,#f0dfba);background:#fff;color:#33302a;cursor:pointer;z-index:2}" +
         ".q-speak-btn:disabled{opacity:.55;cursor:wait}" +
         ".voice-warn-box{background:#fff3cd;border:2px solid #e6c200;border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:15px;line-height:1.5;color:#5a4a00}" +
