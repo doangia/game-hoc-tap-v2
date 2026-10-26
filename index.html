@@ -229,8 +229,12 @@
       .opt .opt-num { font-size: 46px; font-weight: 800; }
       .opt .opt-word { font-size: clamp(24px, 6vw, 32px); font-weight: 800; }
       .opt .opt-text { font-size: clamp(19px, 5vw, 24px); font-weight: 700; line-height: 1.25; }
-      .opt.right { border-color: var(--good); background: var(--good-bg); animation: bounce-ok 0.45s ease; }
-      .opt.wrong { border-color: var(--coral); background: var(--bad-bg); opacity: 0.55; }
+      /* Sửa 26/10 (hệ thống thiết kế): đáp án màu đầy dùng chữ trắng, nhưng
+         trạng thái đúng/sai dùng nền nhạt nên phải đổi chữ sang đậm, nếu
+         không chữ trắng trên nền nhạt sẽ tàng hình (đã thấy trên screenshot
+         nghiệm thu: phương án sai gần như không đọc được). */
+      .opt.right { border-color: var(--good); background: var(--good-bg); color: var(--leaf-dark); animation: bounce-ok 0.45s ease; }
+      .opt.wrong { border-color: var(--coral); background: var(--bad-bg); color: var(--coral-dark); opacity: 0.55; }
       .opt:disabled { cursor: default; }
       @keyframes bounce-ok { 0% { transform: scale(1); } 40% { transform: scale(1.07); } 100% { transform: scale(1); } }
 
