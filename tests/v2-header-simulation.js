@@ -106,6 +106,7 @@ has(html, 'assets/img/angel.svg', "home camp scene uses full angel image");
 has(html, 'Học Tập', "home tab renamed to Hoc Tap per Drive mapping");
 has(html, 'Thành tựu', "achievements tab renamed to Thanh tuu per Drive mapping");
 has(html, 'v2-camp-scene', "home camp scene exists");
+has(html, '#v2-header .profile-bar { margin-bottom: 0; border: none; box-shadow: none; padding: 4px 0; background: transparent; }', "profile bar inside header is transparent, so header stays one uniform sky bar");
 has(html, ".v2-tab-btn.active { background: var(--ds-gold)", "active bottom tab uses gold");
 has(html, '.opt.opt-c0 { background: var(--ds-red)', "answer 1 is strong red");
 has(html, '.opt.opt-c1 { background: var(--ds-blue)', "answer 2 is strong blue");
