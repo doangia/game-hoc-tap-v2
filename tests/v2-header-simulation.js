@@ -100,7 +100,7 @@ has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still rende
 has(html, "--ds-gold: #ffd866", "design system gold token exists");
 has(html, "--ds-brown: #81572a", "design system brown token exists");
 has(html, "--ds-parchment: #fef9f2", "design system parchment token exists");
-eq(html.indexOf('background: linear-gradient(#ffffff, #dff1fd)') !== -1, true, "header uses sky gradient with gold trim");
+eq(html.indexOf('#v2-header { position: sticky; top: 0; z-index: 900; background: var(--card); border-bottom: 3px solid var(--line);') !== -1, true, "header matches approved demo v8: white bar, tan bottom border, no sky gradient");
 has(html, ".v2-tab-btn.active { background: var(--ds-gold)", "active bottom tab uses gold");
 has(html, '.opt.opt-c0 { background: var(--ds-red)', "answer 1 is strong red");
 has(html, '.opt.opt-c1 { background: var(--ds-blue)', "answer 2 is strong blue");
