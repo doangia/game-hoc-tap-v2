@@ -103,10 +103,10 @@ check("level-up detected crossing 100", r5.leveledUp === true && r5.levelBefore 
 profile.character = "fox";
 renderProfileBar();
 const barHtml = els["profile-bar"].innerHTML;
-// Header redesign 2026-10-25: the avatar is now the doll cell
-// (.v2-hd-doll, real SVG doll in the browser, emoji fallback here
-// because the wardrobe module is not loaded in this harness).
-check("profile bar avatar shows chosen fox", barHtml.includes("v2-hd-doll") && barHtml.includes("🦊"), barHtml.slice(0, 120));
+// 26/10, theo quyết định của Danh "thiên thần thay luôn búp bê người":
+// header luôn hiện thiên thần, không còn búp bê hay thú cưng ở đây nữa
+// (tủ đồ vẫn giữ nguyên code, chỉ là header không dùng nó nữa).
+check("profile bar avatar shows angel", barHtml.includes("v2-hd-doll") && barHtml.includes("assets/img/angel.svg"), barHtml.slice(0, 200));
 // DEMO v8 25/10 (Danh duyệt): stars/coins/badges move out of the
 // profile bar into the top-right currency container, updated by the
 // same renderProfileBar call; XP/level stay in the profile bar.

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 340">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a8d8f0"/>
+      <stop offset="60%" stop-color="#d8eefb"/>
+      <stop offset="100%" stop-color="#e8f6ff"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9fd8f0"/>
+      <stop offset="100%" stop-color="#c8ecfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="430" height="340" fill="url(#sky)"/>
+  <!-- mây -->
+  <g fill="#ffffff" opacity="0.95">
+    <ellipse cx="70" cy="38" rx="42" ry="14"/><ellipse cx="100" cy="30" rx="34" ry="16"/>
+    <ellipse cx="330" cy="28" rx="38" ry="12"/><ellipse cx="356" cy="22" rx="28" ry="13"/>
+    <ellipse cx="210" cy="58" rx="30" ry="10"/>
+  </g>
+  <!-- núi xa -->
+  <g>
+    <path d="M0 150 L90 55 L160 150 Z" fill="#8fb8d8"/>
+    <path d="M90 55 L112 82 L70 82 Z" fill="#ffffff"/>
+    <path d="M120 150 L215 45 L310 150 Z" fill="#7aa8cc"/>
+    <path d="M215 45 L238 75 L194 75 Z" fill="#ffffff"/>
+    <path d="M280 150 L360 65 L430 150 Z" fill="#8fb8d8"/>
+  </g>
+  <!-- núi gần + vách thác -->
+  <path d="M0 210 L110 130 L210 210 Z" fill="#6fae7e"/>
+  <path d="M210 210 L320 120 L430 210 Z" fill="#5da06e"/>
+  <path d="M300 120 L340 120 L340 210 L300 210 Z" fill="#9c8a70"/>
+  <!-- thác nước -->
+  <path d="M306 120 L334 120 L330 205 Q320 215 310 205 Z" fill="url(#water)"/>
+  <path d="M312 120 L328 120 L326 200 L314 200 Z" fill="#ffffff" opacity="0.7"/>
+  <!-- sông -->
+  <path d="M0 215 Q110 205 210 218 Q320 230 430 214 L430 260 Q320 275 210 262 Q110 250 0 262 Z" fill="url(#water)"/>
+  <!-- đồi cỏ -->
+  <ellipse cx="80" cy="300" rx="140" ry="55" fill="#7cc47a"/>
+  <ellipse cx="330" cy="305" rx="150" ry="60" fill="#8ed08a"/>
+  <ellipse cx="215" cy="325" rx="180" ry="45" fill="#6fbf6e"/>
+  <!-- cây thông -->
+  <g>
+    <path d="M52 250 L72 205 L92 250 Z" fill="#2f8f5b"/><path d="M58 228 L72 195 L86 228 Z" fill="#3aa86b"/><rect x="68" y="250" width="8" height="14" fill="#7a5230"/>
+    <path d="M352 252 L372 208 L392 252 Z" fill="#2f8f5b"/><path d="M358 230 L372 198 L386 230 Z" fill="#3aa86b"/><rect x="368" y="252" width="8" height="14" fill="#7a5230"/>
+    <circle cx="398" cy="240" r="18" fill="#4daa6a"/><rect x="395" y="252" width="6" height="14" fill="#7a5230"/>
+  </g>
+  <!-- lều trại bên trái -->
+  <g>
+    <path d="M18 300 L62 245 L106 300 Z" fill="#f6e5c1" stroke="#d9bd8a" stroke-width="2"/>
+    <path d="M62 245 L62 300" stroke="#7a5230" stroke-width="3"/>
+    <path d="M18 300 L106 300" stroke="#7a5230" stroke-width="3"/>
+    <path d="M62 245 L88 258 L62 270 Z" fill="#e8a020"/>
+    <g>
+      <path d="M24 258 L34 268 L44 258 Z" fill="#ff6b6b"/><path d="M44 258 L54 268 L64 258 Z" fill="#ffd866"/><path d="M64 258 L74 268 L84 258 Z" fill="#4dabf7"/>
+    </g>
+  </g>
+  <!-- hoa dại -->
+  <g>
+    <circle cx="150" cy="300" r="5" fill="#ff6b9d"/><circle cx="170" cy="312" r="5" fill="#ffd866"/><circle cx="260" cy="305" r="5" fill="#f06595"/><circle cx="290" cy="315" r="5" fill="#ffffff"/><circle cx="120" cy="318" r="5" fill="#ffd866"/>
+    <circle cx="150" cy="300" r="2" fill="#fff"/><circle cx="260" cy="305" r="2" fill="#fff"/>
+  </g>
+</svg>

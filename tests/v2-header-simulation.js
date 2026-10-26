@@ -100,7 +100,11 @@ has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still rende
 has(html, "--ds-gold: #ffd866", "design system gold token exists");
 has(html, "--ds-brown: #81572a", "design system brown token exists");
 has(html, "--ds-parchment: #fef9f2", "design system parchment token exists");
-eq(html.indexOf('#v2-header { position: sticky; top: 0; z-index: 900; background: var(--card); border-bottom: 3px solid var(--line);') !== -1, true, "header matches approved demo v8: white bar, tan bottom border, no sky gradient");
+eq(html.indexOf('background: linear-gradient(#eaf6ff, #d8ecfa); border-bottom: 4px solid var(--ds-gold-deep);') !== -1, true, "header matches Drive style: sky gradient, gold bottom border (supersedes demo v8)");
+has(html, 'assets/img/angel.svg', "header uses angel image instead of doll");
+has(html, 'Học Tập', "home tab renamed to Hoc Tap per Drive mapping");
+has(html, 'Thành tựu', "achievements tab renamed to Thanh tuu per Drive mapping");
+has(html, 'v2-camp-scene', "home camp scene exists");
 has(html, ".v2-tab-btn.active { background: var(--ds-gold)", "active bottom tab uses gold");
 has(html, '.opt.opt-c0 { background: var(--ds-red)', "answer 1 is strong red");
 has(html, '.opt.opt-c1 { background: var(--ds-blue)', "answer 2 is strong blue");

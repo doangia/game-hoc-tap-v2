@@ -459,11 +459,11 @@
     </style>
     <style id="v2-ui-shell-css">
       /* UI shell 24/10: header + bottom bar, bảng màu sáng đã khóa, không chế độ tối. */
-      /* 26/10, theo ý Danh "header giống demo": header giữ đúng demo v8 đã
-         duyệt (thẻ trắng, viền kem dưới), KHÔNG dùng gradient trời/viền vàng
-         của hệ thống thiết kế cho header — hệ thống chỉ áp dụng cho phần còn
-         lại của app, header là ngoại lệ đã chốt. */
-      #v2-header { position: sticky; top: 0; z-index: 900; background: var(--card); border-bottom: 3px solid var(--line); display: flex; align-items: stretch; gap: 10px; padding: 8px 12px; max-width: 860px; margin: 0 auto; }
+      /* 26/10, theo quyết định của Danh áp dụng demo Drive lên game (thiên
+         thần thay búp bê người): header theo kiểu Drive — nền trời nhạt,
+         viền vàng dưới, avatar tròn viền vàng, nút tròn xanh dương. Ngoại
+         lệ demo v8 trước đây bị thay thế bởi quyết định này. */
+      #v2-header { position: sticky; top: 0; z-index: 900; background: linear-gradient(#eaf6ff, #d8ecfa); border-bottom: 4px solid var(--ds-gold-deep); display: flex; align-items: stretch; gap: 10px; padding: 8px 12px; max-width: 860px; margin: 0 auto; }
       #v2-header #profile-bar { flex: 1; min-width: 0; }
       #v2-header .profile-bar { margin-bottom: 0; border: none; box-shadow: none; padding: 4px 0; }
       .v2-header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -477,8 +477,20 @@
       #v2-header .v2-header-actions { align-items: flex-start; }
       #v2-header .v2-header-streak { background: #fff; border: 3px solid var(--line); border-radius: 14px; padding: 8px 10px; }
       .profile-bar.v2-hd { align-items: flex-start; }
-      .v2-hd-doll { flex-shrink: 0; background: #fff; border: 3px solid var(--line); border-radius: 18px; box-shadow: 0 3px 0 var(--line); padding: 4px; line-height: 0; }
+      .v2-hd-doll { flex-shrink: 0; background: #fff; border: 3px solid var(--ds-gold-deep); border-radius: 50%; overflow: hidden; box-shadow: 0 2px 0 rgba(0,0,0,.12); padding: 0; line-height: 0; }
       .v2-hd-doll svg { width: 78px; height: auto; display: block; border-radius: 12px; }
+      .v2-hd-doll img { width: 78px; height: auto; display: block; }
+      .v2-header-actions button { background: linear-gradient(#5aa9f0, #2f7de1) !important; color: #fff; border: none !important; box-shadow: 0 3px 0 #1d5fb0 !important; border-radius: 50% !important; }
+      #v2-header .v2-header-streak { border-color: var(--sky); }
+      .v2-hd-chip { border-color: var(--sky); }
+      /* Sân trại trang chính kiểu Drive: phong cảnh + thiên thần ở giữa +
+         icon Hằng ngày mở tab Nhiệm vụ. Các icon Cộng đồng, Cửa ải, Mùa
+         lễ của demo Drive bị bỏ vì game học tập không có các tính năng đó. */
+      .v2-camp-scene { position: relative; height: 250px; border: 3px solid var(--ds-brown); border-radius: 22px; overflow: hidden; margin-bottom: 14px; }
+      .v2-camp-scene .camp-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+      .v2-camp-scene .camp-angel { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); height: 155px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.2)); }
+      .v2-camp-daily { position: absolute; left: 10px; top: 10px; background: #fff; border: 3px solid var(--ds-gold-deep); border-radius: 50%; width: 52px; height: 52px; font-size: 24px; cursor: pointer; display: grid; place-items: center; }
+      .v2-camp-daily-label { position: absolute; left: 10px; top: 64px; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.9); border-radius: 999px; padding: 1px 8px; }
       .v2-hd-doll .v2-hd-doll-fallback { font-size: 52px; line-height: 1; display: block; padding: 8px 4px; }
       .v2-hd-main { flex: 1; min-width: 180px; }
       .profile-bar.v2-hd .who { min-width: 0; }
@@ -564,7 +576,7 @@
       <!-- LOGIN -->
       <section class="screen on" id="scr-login">
         <div class="hello">
-          <span class="mascot" aria-hidden="true">🦉</span>
+          <img class="mascot" src="assets/img/angel.svg" alt="Thiên thần" style="height:84px">
           <h1>Chào em đến với Game Học Tập!</h1>
           <p>Nhập tên và chọn lớp để bắt đầu nhé. Điểm sao của em được lưu ngay trên máy này.</p>
         </div>
@@ -590,8 +602,14 @@
       <section class="screen" id="scr-home">
         <div id="v2-tab-home" class="v2-tab-panel">
 <div class="panel-toggle-row"><button class="sound-master" id="v2-review-btn" type="button" hidden>🔁 Ôn lại câu sai</button></div>
+<div class="v2-camp-scene">
+          <img class="camp-bg" src="assets/img/landscape.svg" alt="Sân trại">
+          <img class="camp-angel" src="assets/img/angel.svg" alt="Thiên thần">
+          <button class="v2-camp-daily" type="button" aria-label="Nhiệm vụ hằng ngày" onclick="document.querySelector('[data-v2-tab=&quot;quests&quot;]').click()">📅</button>
+          <span class="v2-camp-daily-label">Hằng ngày</span>
+        </div>
 <div class="hello">
-          <span class="mascot" aria-hidden="true">🦉</span>
+          <img class="mascot" src="assets/img/angel.svg" alt="Thiên thần" style="height:72px">
           <h1>Hôm nay học gì nào?</h1>
           <p>Chạm vào một môn để bắt đầu chơi nhé!</p>
         </div>
@@ -773,10 +791,10 @@
 
     </div>
     <nav id="v2-bottombar" aria-label="Điều hướng chính">
-      <button type="button" class="v2-tab-btn tab-home active" data-v2-tab="home"><span class="v2-tab-icon">🏠</span><span class="v2-tab-label">Học</span></button>
+      <button type="button" class="v2-tab-btn tab-home active" data-v2-tab="home"><span class="v2-tab-icon">🏠</span><span class="v2-tab-label">Học Tập</span></button>
       <button type="button" class="v2-tab-btn tab-quests" data-v2-tab="quests"><span class="v2-tab-icon">🎯</span><span class="v2-tab-label">Nhiệm vụ</span><span id="v2-tab-dot-quests" class="v2-badge-dot" hidden></span></button>
       <button type="button" class="v2-tab-btn tab-shop" data-v2-tab="shop"><span class="v2-tab-icon">🛍️</span><span class="v2-tab-label">Cửa hàng</span></button>
-      <button type="button" class="v2-tab-btn tab-achievements" data-v2-tab="achievements"><span class="v2-tab-icon">🏅</span><span class="v2-tab-label">Thành tích</span></button>
+      <button type="button" class="v2-tab-btn tab-achievements" data-v2-tab="achievements"><span class="v2-tab-icon">🏅</span><span class="v2-tab-label">Thành tựu</span></button>
       <button type="button" class="v2-tab-btn tab-profile" data-v2-tab="profile"><span class="v2-tab-icon">👤</span><span class="v2-tab-label">Hồ sơ</span></button>
     </nav>
     <script>
@@ -6411,9 +6429,11 @@ window.__ensureGrade = function (g, cb) {
          giới tính/giọng/đổi người chơi vào menu 👤 ở cụm icon phải.
          Giữ nguyên id v2-gender-sel, btn-tone-toggle, btn-logout và
          listener bên dưới, nên mọi nút vẫn hoạt động như cũ. */
-      var dollMini = "";
-      try { if (window.__v2wardrobe && window.__v2wardrobe.miniDollSVG) dollMini = window.__v2wardrobe.miniDollSVG(profile) || ""; } catch (e) {}
-      var dollCell = dollMini ? '<div class="v2-hd-doll">' + dollMini + '</div>' : '<div class="v2-hd-doll"><span class="v2-hd-doll-fallback">' + ch + '</span></div>';
+      /* 26/10, theo quyết định của Danh "thiên thần thay luôn búp bê người":
+         header luôn hiện thiên thần, không còn dùng búp bê tủ đồ hay thú
+         cưng ở đây nữa. Hàm miniDollSVG của tủ đồ vẫn giữ nguyên cho
+         test và cho tủ đồ, chỉ là header không dùng nó nữa. */
+      var dollCell = '<div class="v2-hd-doll"><img src="assets/img/angel.svg" alt="Thiên thần"></div>';
       var xpLeft = Math.max(0, prog.next - (profile.xp || 0));
       var nextLine = "";
       try {
