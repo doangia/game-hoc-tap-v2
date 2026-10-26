@@ -94,6 +94,20 @@ var miniBare = wd.miniDollSVG(p3);
 has(miniBare, 'data-layer="shirt"', "RESTORE: doll with empty outfit still renders a shirt (default outfit kept)");
 has(miniBare, 'data-layer="bottom"', "RESTORE: doll with empty outfit still renders pants (default outfit kept)");
 has(miniBare, 'data-layer="shoes"', "RESTORE: doll with empty outfit still renders shoes (default outfit kept)");
+/* Hệ thống thiết kế v1 (26/10, Danh duyệt): token chuẩn, shell và
+   component theo ảnh mẫu — nền trời, thẻ giấy da, nút chính vàng,
+   đáp án màu đầy + hình khối theo thứ tự. */
+has(html, "--ds-gold: #ffd866", "design system gold token exists");
+has(html, "--ds-brown: #81572a", "design system brown token exists");
+has(html, "--ds-parchment: #fef9f2", "design system parchment token exists");
+eq(html.indexOf('background: linear-gradient(#ffffff, #dff1fd)') !== -1, true, "header uses sky gradient with gold trim");
+has(html, ".v2-tab-btn.active { background: var(--ds-gold)", "active bottom tab uses gold");
+has(html, '.opt.opt-c0 { background: var(--ds-red)', "answer 1 is strong red");
+has(html, '.opt.opt-c1 { background: var(--ds-blue)', "answer 2 is strong blue");
+has(html, '.opt.opt-c2 { background: var(--ds-yellow)', "answer 3 is strong yellow");
+has(html, '.opt.opt-c3 { background: var(--good)', "answer 4 is strong green");
+has(html, '.big-btn.primary { background: var(--ds-gold)', "primary button uses gold");
+has(html, 'background: var(--ds-parchment)', "parchment cards exist");
 /* 25/10, theo ý Danh: bảng chọn lớp không hiện mặc định trên trang
    chính khi người chơi đã chọn lớp lúc đăng nhập; chỉ hiện khi bấm
    Đổi lớp. Bảng chọn lớp lúc đăng nhập vẫn giữ nguyên. */
