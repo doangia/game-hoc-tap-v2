@@ -6433,7 +6433,9 @@ window.__ensureGrade = function (g, cb) {
          header luôn hiện thiên thần, không còn dùng búp bê tủ đồ hay thú
          cưng ở đây nữa. Hàm miniDollSVG của tủ đồ vẫn giữ nguyên cho
          test và cho tủ đồ, chỉ là header không dùng nó nữa. */
-      var dollCell = '<div class="v2-hd-doll"><img src="assets/img/angel.svg" alt="Thiên thần"></div>';
+      /* Avatar header dùng ảnh khuôn mặt (avatar.svg) để vừa khung tròn;
+         ảnh thiên thần toàn thân (angel.svg) dùng ở sân trại và màn chào. */
+      var dollCell = '<div class="v2-hd-doll"><img src="assets/img/avatar.svg" alt="Thiên thần"></div>';
       var xpLeft = Math.max(0, prog.next - (profile.xp || 0));
       var nextLine = "";
       try {

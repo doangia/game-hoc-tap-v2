@@ -106,7 +106,7 @@ const barHtml = els["profile-bar"].innerHTML;
 // 26/10, theo quyết định của Danh "thiên thần thay luôn búp bê người":
 // header luôn hiện thiên thần, không còn búp bê hay thú cưng ở đây nữa
 // (tủ đồ vẫn giữ nguyên code, chỉ là header không dùng nó nữa).
-check("profile bar avatar shows angel", barHtml.includes("v2-hd-doll") && barHtml.includes("assets/img/angel.svg"), barHtml.slice(0, 200));
+check("profile bar avatar shows angel", barHtml.includes("v2-hd-doll") && barHtml.includes("assets/img/avatar.svg"), barHtml.slice(0, 200));
 // DEMO v8 25/10 (Danh duyệt): stars/coins/badges move out of the
 // profile bar into the top-right currency container, updated by the
 // same renderProfileBar call; XP/level stay in the profile bar.
